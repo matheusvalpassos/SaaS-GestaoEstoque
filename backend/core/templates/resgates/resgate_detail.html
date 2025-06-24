@@ -1,0 +1,163 @@
+{# backend/core/templates/resgates/resgate_detail.html #}
+{% load static %} {# Garante que a tag static funcione #}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Rede Bellas</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos CSS para animações (para consistência com resgate_list e dashboard) */
+        .fade-in-item {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-bounce-once {
+            animation: bounce 1s ease-in-out 1;
+        }
+        .animate-pulse-once {
+            animation: pulse 1.5s ease-in-out 1;
+        }
+        /* Garantir que as mensagens do Django se alinhem e tenham bom visual */
+        .messages li {
+            list-style: none; /* Remove bolinhas da lista */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-inter antialiased text-gray-800">
+    {# Inclua a navbar aqui, se existir e for comum a todas as páginas #}
+    {% include 'partials/_navbar.html' %} 
+
+    <div class="container mx-auto p-4 md:p-8 animate-fade-in"> {# Adicionado animate-fade-in à div principal #}
+        {# Mensagens do Django, se houver - Estilização aprimorada #}
+        {% if messages %}
+            <div class="space-y-3 mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg shadow-md {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500{% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500{% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %} flex items-center transform transition-transform hover:scale-[1.01] fade-in-item" data-delay="{{ forloop.counter }}">
+                        <svg class="w-5 h-5 mr-3 {% if message.tags == 'success' %}text-green-600{% elif message.tags == 'error' %}text-red-600{% elif message.tags == 'warning' %}text-yellow-600{% else %}text-blue-600{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            {% if message.tags == 'success' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            {% elif message.tags == 'error' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            {% else %}
+                                <path fill-rule="evenodd" d="M8.257 3.332a.995.995 0 011.486 0l3.054 5.09a1 1 0 01-.743 1.603H5.946a1 1 0 01-.743-1.603l3.054-5.09z" clip-rule="evenodd"></path>
+                            {% endif %}
+                        </svg>
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Botões de navegação e ação - Agora com mais animações #}
+        <div class="no-print flex justify-between items-center mb-6 fade-in-item" data-delay="0.2"> 
+            <a href="{% url 'resgate_list' %}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                &larr; Voltar para a Lista
+            </a>
+            <a href="{% url 'resgate_detail' resgate.pk %}?format=pdf" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-105 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v5a2 2 0 002 2h12a2 2 0 002-2v-5a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm2 5a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1zm1 7H4v-4h12v4h-4v-1a1 1 0 100 2h4a2 2 0 002-2v-5a2 2 0 00-2-2h-1V9a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                Gerar Recibo (PDF)
+            </a>
+        </div>
+
+        {# Conteúdo principal do recibo para visualização web - Agora com mais animações #}
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto border border-gray-200 fade-in-item" data-delay="0.4"> 
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-[#DB0020] mb-2 animate-pulse-once">DETALHES DO RESGATE</h2>
+                <p class="text-gray-600 fade-in-item" data-delay="0.6">Informações completas do resgate</p>
+                <img src="{% static 'img/logos (7).png' %}" alt="Rede Bellas Logo" class="h-16 mx-auto mt-4 animate-bounce-once">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-50 p-4 rounded-lg fade-in-item transform hover:shadow-lg transition duration-300" data-delay="0.8">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2 border-b pb-2 border-gray-200">INFORMAÇÕES DO CLIENTE:</h4>
+                    <p class="text-gray-700"><strong>Nome:</strong> {{ resgate.cliente.nome_completo }}</p>
+                    <p class="text-gray-700"><strong>CPF:</strong> {{ resgate.cliente.cpf|default:"Não informado" }}</p>
+                    <p class="text-gray-700"><strong>Total de Pontos Atuais:</strong> {{ resgate.cliente.pontos_acumulados }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg fade-in-item transform hover:shadow-lg transition duration-300" data-delay="1.0">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2 border-b pb-2 border-gray-200">DETALHES DO RESGATE:</h4>
+                    <p class="text-gray-700"><strong>Data de Emissão:</strong> {{ resgate.gerado_em|date:"d/m/Y H:i" }}</p>
+                    <p class="text-gray-700"><strong>Vencimento:</strong> {{ resgate.vencimento|date:"d/m/Y H:i" }}</p>
+                    <p class="text-gray-700">
+                        <strong>Status:</strong> 
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if resgate.status|lower == 'gerado' %}bg-blue-100 text-blue-800
+                            {% elif resgate.status|lower == 'resgatado' %}bg-green-100 text-green-800
+                            {% elif resgate.status|lower == 'vencido' %}bg-yellow-100 text-yellow-800
+                            {% elif resgate.status|lower == 'cancelado' %}bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ resgate.get_status_display }}
+                        </span>
+                    </p>
+                    <p class="text-gray-700"><strong>Tipo:</strong> {{ resgate.tipo_resgate }}</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 fade-in-item transform hover:shadow-lg transition duration-300" data-delay="1.2">
+                <h4 class="text-lg font-semibold text-gray-800 mb-2 border-b pb-2 border-gray-200">ITEM RESGATADO:</h4>
+                <p class="text-gray-700"><strong>Produto:</strong> {{ resgate.produto.nome }}</p>
+                <p class="text-gray-700"><strong>Pontos por Unidade:</strong> {{ resgate.produto.pontos_necessarios }}</p>
+                <p class="text-gray-700"><strong>Quantidade:</strong> {{ resgate.quantidade }}</p>
+                <p class="text-xl font-bold text-[#DB0020] mt-4">
+                    <strong>Total de Pontos Utilizados:</strong> {{ resgate.pontos_totais_resgatados }}
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg mb-8 fade-in-item transform hover:shadow-lg transition duration-300" data-delay="1.4">
+                <h4 class="text-lg font-semibold text-gray-800 mb-2 border-b pb-2 border-gray-200">LOCAL DE RETIRADA:</h4>
+                <p class="text-gray-700"><strong>Posto:</strong> {{ resgate.posto_resgate.nome }}</p>
+                <p class="text-gray-700"><strong>Endereço:</strong> {{ resgate.posto_resgate.endereco|default:"Não informado" }}</p>
+            </div>
+
+            <div class="text-center mb-8 border border-dashed border-gray-400 p-4 rounded-lg bg-yellow-50 fade-in-item transform hover:shadow-lg transition duration-300" data-delay="1.6">
+                <h4 class="font-semibold text-gray-800 text-lg mb-2">CÓDIGO DE RASTREAMENTO:</h4>
+                <p class="text-4xl font-mono tracking-widest text-gray-900 break-all animate-pulse-once">{{ resgate.codigo_rastreamento }}</p>
+                <p class="text-sm text-gray-500 mt-2">Apresente este código no posto para retirar seu produto.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-center mt-10 fade-in-item" data-delay="1.8">
+                <div class="transform hover:scale-105 transition duration-300">
+                    <hr class="border-t border-gray-400 my-2 mx-auto w-3/4">
+                    <p class="text-sm text-gray-600">Assinatura do Recebedor</p>
+                    {% if resgate.nome_recebedor %}<p class="font-semibold mt-1">{{ resgate.nome_recebedor }}</p>{% endif %}
+                </div>
+                <div class="transform hover:scale-105 transition duration-300">
+                    <hr class="border-t border-gray-400 my-2 mx-auto w-3/4">
+                    <p class="text-sm text-gray-600">Assinatura do Motorista / Responsável</p>
+                    {% if resgate.nome_motorista %}<p class="font-semibold mt-1">{{ resgate.nome_motorista }}</p>{% endif %}
+                </div>
+            </div>
+
+            <p class="text-center text-xs text-gray-500 mt-8 fade-in-item" data-delay="2.0">
+                Este é um recibo eletrônico. Não requer assinatura física.
+                Gerado em {{ "now"|date:"d/m/Y H:i" }}
+            </p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animação de fade-in para elementos com data-delay
+            const animatedItems = document.querySelectorAll('.fade-in-item');
+            animatedItems.forEach(item => {
+                const delay = parseFloat(item.dataset.delay) * 0.1; // Ajuste o multiplicador
+                item.style.animationDelay = `${delay}s`;
+                // A classe 'fade-in-item' já está aplicada no HTML, então a animação deve disparar
+            });
+        });
+    </script>
+</body>
+</html>

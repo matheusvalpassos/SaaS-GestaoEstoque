@@ -1,0 +1,77 @@
+{# backend/core/templates/resgates/resgate_validate_tracking.html #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Rede Bellas</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+</head>
+<body class="bg-gray-100 font-inter antialiased text-gray-800">
+    {% include 'partials/_navbar.html' %}
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-[#DB0020] mb-8 text-center">{{ title }}</h1>
+
+        {% if messages %}
+            <ul class="messages mb-4">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }} p-3 rounded mb-2 text-white {% if message.tags == 'success' %}bg-green-500{% elif message.tags == 'error' %}bg-red-500{% elif message.tags == 'warning' %}bg-orange-500{% else %}bg-blue-500{% endif %}"{% endif %}>
+                    {{ message }}
+                </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
+            <p class="text-gray-700 mb-4">Insira o código de rastreamento para validar um resgate e marcar como "Resgatado".</p>
+            <form method="post" action="{% url 'resgate_validate_tracking' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="codigo_rastreamento" class="block text-gray-700 text-sm font-bold mb-2">Código de Rastreamento:</label>
+                    <input type="text" name="codigo_rastreamento" id="codigo_rastreamento" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           placeholder="Ex: 1234abcd-5678-efgh-9012-ijklmnopqrs" required>
+                </div>
+                <div class="mb-4">
+                    <label for="nome_recebedor" class="block text-gray-700 text-sm font-bold mb-2">Nome do Recebedor (Opcional):</label>
+                    <input type="text" name="nome_recebedor" id="nome_recebedor" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           placeholder="Nome de quem está retirando">
+                </div>
+                <div class="mb-6">
+                    <label for="nome_motorista" class="block text-gray-700 text-sm font-bold mb-2">Nome do Motorista/Entregador (Opcional):</label>
+                    <input type="text" name="nome_motorista" id="nome_motorista" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           placeholder="Nome do responsável pela entrega">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 focus:outline-none focus:shadow-outline flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        Validar Resgate
+                    </button>
+                    <a href="{% url 'resgate_list' %}" class="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800">Cancelar</a>
+                </div>
+            </form>
+        </div>
+
+        {# Opcional: Mostrar detalhes do resgate após uma validação bem-sucedida (se o GET for um redirect para cá) #}
+        {% if resgate_encontrado %}
+            <div class="mt-8 bg-green-50 p-6 rounded-lg shadow-md max-w-lg mx-auto border border-green-200">
+                <h4 class="text-xl font-bold text-green-700 mb-4">Resgate Encontrado e Status Atualizado:</h4>
+                <p><strong>Produto:</strong> {{ resgate_encontrado.produto.nome }}</p>
+                <p><strong>Cliente:</strong> {{ resgate_encontrado.cliente.nome_completo }}</p>
+                <p><strong>Posto:</strong> {{ resgate_encontrado.posto_resgate.nome }}</p>
+                <p><strong>Status Atual:</strong> <span class="font-bold text-green-600">{{ resgate_encontrado.get_status_display }}</span></p>
+                <p class="text-sm text-gray-600 mt-4">Você pode ver mais detalhes <a href="{% url 'resgate_detail' resgate_encontrado.pk %}" class="text-blue-600 hover:underline">clicando aqui</a>.</p>
+            </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

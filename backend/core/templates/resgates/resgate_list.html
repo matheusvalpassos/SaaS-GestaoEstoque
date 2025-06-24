@@ -1,0 +1,296 @@
+{# meu_saas_projeto/backend/core/templates/resgates/resgate_list.html #}
+{% load static %}
+{% load widget_tweaks %} {# Necessário para usar o filtro 'add_class' #}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Rede Bellas</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+    <style>
+        /* Estilos CSS para animações e ajustes finos */
+        .fade-in-item {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Ajuste para o select e datetime-local do Django Forms, para que o Tailwind o estilize */
+        select.form-control, input[type="datetime-local"].form-control, input[type="text"].form-control {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 px-3 py-2;
+            font-size: 0.9rem; /* Levemente menor para compactar */
+            line-height: 1.25; /* Ajusta a altura da linha */
+        }
+        /* Estilos de label customizados para o filtro */
+        .filter-label {
+            @apply block text-sm font-medium text-gray-700 mb-1; /* Ajustado margin-bottom */
+        }
+
+
+        /* Estilos para a seção de filtro colapsável */
+        .filter-collapse-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .filter-collapse-content.expanded {
+            max-height: 500px; /* Um valor grande o suficiente para o conteúdo */
+            transition: max-height 0.5s ease-in;
+        }
+        .filter-arrow {
+            transition: transform 0.3s ease-out;
+        }
+        .filter-arrow.expanded {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-inter antialiased text-gray-800">
+    {% include 'partials/_navbar.html' %}
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-[#DB0020] mb-8 text-center animate-pulse-once">
+            {{ title }}
+        </h1>
+
+        {# BLOCO PARA EXIBIR MENSAGENS DO DJANGO #}
+        {% if messages %}
+            <div class="space-y-3 mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg shadow-md {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500{% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500{% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %} flex items-center transform transition-transform hover:scale-[1.01] animate-fade-in">
+                        <svg class="w-5 h-5 mr-3 {% if message.tags == 'success' %}text-green-600{% elif message.tags == 'error' %}text-red-600{% elif message.tags == 'warning' %}text-yellow-600{% else %}text-blue-600{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            {% if message.tags == 'success' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            {% elif message.tags == 'error' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            {% else %}
+                                <path fill-rule="evenodd" d="M8.257 3.332a.995.995 0 011.486 0l3.054 5.09a1 1 0 01-.743 1.603H5.946a1 1 0 01-.743-1.603l3.054-5.09z" clip-rule="evenodd"></path>
+                            {% endif %}
+                        </svg>
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Formulário de filtro colapsável e mais compacto #}
+        <div class="bg-white p-3 rounded-lg shadow-md mb-6 transform transition-all duration-300 hover:shadow-xl">
+            <div class="flex justify-between items-center cursor-pointer pb-3 border-b border-gray-200 mb-3" id="filterToggleHeader">
+                <h2 class="text-xl font-bold text-gray-800">Filtrar Resgates</h2>
+                <svg id="filterArrow" class="w-5 h-5 text-gray-600 filter-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+            
+            <div id="filterCollapseContent" class="filter-collapse-content">
+                <form method="get" action="{% url 'resgate_list' %}" class="grid grid-cols-1 md:grid-cols-4 gap-x-3 gap-y-2 items-end">
+                    {# Campo de filtro por Posto #}
+                    <div>
+                        <label for="{{ filter_form.posto.id_for_label }}" class="filter-label">Posto:</label>
+                        {{ filter_form.posto|add_class:"form-control" }}
+                    </div>
+                    {# Campo de filtro por Produto #}
+                    <div>
+                        <label for="{{ filter_form.produto.id_for_label }}" class="filter-label">Produto:</label>
+                        {{ filter_form.produto|add_class:"form-control" }}
+                    </div>
+                    {# Campo de filtro por Data/Hora de Geração (Início) #}
+                    <div>
+                        <label for="{{ filter_form.data_geracao_inicio.id_for_label }}" class="filter-label">Gerado de:</label>
+                        {{ filter_form.data_geracao_inicio|add_class:"form-control" }}
+                    </div>
+                    {# Campo de filtro por Data/Hora de Geração (Fim) #}
+                    <div>
+                        <label for="{{ filter_form.data_geracao_fim.id_for_label }}" class="filter-label">Gerado até:</label>
+                        {{ filter_form.data_geracao_fim|add_class:"form-control" }}
+                    </div>
+                    {# NOVO CAMPO: Código de Rastreamento #}
+                    <div class="md:col-span-2"> {# Ocupa 2 colunas para maior visibilidade #}
+                        <label for="{{ filter_form.codigo_rastreamento.id_for_label }}" class="filter-label">Cód. Rastr. (Lote):</label>
+                        {{ filter_form.codigo_rastreamento|add_class:"form-control" }}
+                    </div>
+                    {# Botões de ação do filtro #}
+                    <div class="md:col-span-full flex flex-col md:flex-row gap-2 mt-3">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg shadow-md transition duration-300 transform hover:scale-105 flex items-center justify-center text-sm">
+                            <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path></svg>
+                            Filtrar
+                        </button>
+                        {# Botão para Gerar Relatório PDF com os filtros atuais #}
+                        <a href="{% url 'resgate_list' %}?format=pdf{% if request.GET.posto %}&posto={{ request.GET.posto }}{% endif %}{% if request.GET.produto %}&produto={{ request.GET.produto }}{% endif %}{% if request.GET.data_geracao_inicio %}&data_geracao_inicio={{ request.GET.data_geracao_inicio }}{% endif %}{% if request.GET.data_geracao_fim %}&data_geracao_fim={{ request.GET.data_geracao_fim }}{% endif %}{% if request.GET.codigo_rastreamento %}&codigo_rastreamento={{ request.GET.codigo_rastreamento }}{% endif %}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg shadow-md transition duration-300 transform hover:scale-105 flex items-center justify-center text-sm">
+                            <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v5a2 2 0 002 2h12a2 2 0 002-2v-5a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm2 5a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1zm1 7H4v-4h12v4h-4v-1a1 1 0 100 2h4a2 2 0 002-2v-5a2 2 0 00-2-2h-1V9a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                            Gerar Relatório (PDF)
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end mb-6 space-x-4"> {# Botões de ação globais #}
+            <a href="{% url 'resgate_upload_parse' %}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                Importar Novos Resgates
+            </a>
+            <a href="{% url 'resgate_export_csv' %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Exportar Resgates (CSV)
+            </a>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto transform transition-all duration-300 hover:shadow-xl">
+            {% if resgates %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Produto
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Cliente
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Posto de Resgate
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tipo de Resgate
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Gerado Em
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vencimento
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Quantidade
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Situação
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Pontos Totais
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Código
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Ações
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for resgate in resgates %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200 fade-in-item" data-delay="{{ forloop.counter }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ resgate.produto.nome }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.cliente.nome_completo }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.posto_resgate.nome }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.tipo_resgate }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.gerado_em|date:"d/m/Y H:i" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.vencimento|date:"d/m/Y H:i" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.quantidade }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {% if resgate.status|lower == 'gerado' %}bg-blue-100 text-blue-800
+                                        {% elif resgate.status|lower == 'resgatado' %}bg-green-100 text-green-800
+                                        {% elif resgate.status|lower == 'vencido' %}bg-yellow-100 text-yellow-800
+                                        {% elif resgate.status|lower == 'cancelado' %}bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {{ resgate.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.pontos_totais_resgatados }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ resgate.codigo_rastreamento }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'resgate_detail' resgate.pk %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg shadow-sm transition duration-300 text-xs mr-1 transform hover:scale-105">Ver Detalhes</a>
+                                    <form action="{% url 'resgate_delete' resgate.pk %}" method="post" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir este resgate?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg shadow-sm transition duration-300 text-xs transform hover:scale-105">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-center text-gray-600 py-10 text-lg">
+                    Nenhum resgate encontrado.
+                    <a href="{% url 'resgate_upload_parse' %}" class="text-[#DB0020] hover:underline hover:text-red-700 transition-colors duration-200">Importe alguns agora!</a>
+                </p>
+            {% endif %}
+        </div>
+
+        {# ADIÇÃO AQUI: Seção para o botão de exclusão em lote (Excluir Todos) #}
+        {% if resgates %} {# Só mostra o botão se houver resgates para excluir #}
+            <hr class="my-8 border-gray-300">
+            <div class="mt-4 p-6 bg-red-50 rounded-lg shadow-md border border-red-200 transform transition-all duration-300 hover:shadow-xl">
+                <h3 class="text-xl font-bold text-red-700 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> {# Ícone de aviso #}
+                    Zona de Perigo!
+                </h3>
+                <p class="text-red-600 mb-4 leading-relaxed">
+                    **CUIDADO:** A exclusão de **todos os resgates** é uma ação **irreversível** e não pode ser desfeita. Por favor, certifique-se de que você realmente deseja prosseguir com esta operação.
+                </p>
+                <form action="{% url 'resgate_delete_all' %}" method="post" class="inline" onsubmit="return confirm('ATENÇÃO: Você está prestes a excluir TODOS os resgates. Esta ação não pode ser desfeita. Tem certeza que deseja continuar?');">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 text-white font-bold py-2 px-5 rounded-lg shadow-lg transition duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center"> {# Classes atualizadas #}
+                        <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd"></path></svg> {# Ícone de lixeira #}
+                        Excluir Todos os Resgates Permanentemente
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animação de fade-in para as linhas da tabela
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach((row, index) => {
+                // Obter o delay do atributo data-delay
+                const delay = parseFloat(row.dataset.delay) * 0.05;
+                row.style.animationDelay = `${delay}s`;
+                row.classList.add('fade-in-item');
+            });
+
+            // Lógica para expandir/recolher o filtro
+            const filterToggleHeader = document.getElementById('filterToggleHeader');
+            const filterCollapseContent = document.getElementById('filterCollapseContent');
+            const filterArrow = document.getElementById('filterArrow');
+
+            // Inicia o filtro recolhido por padrão
+            filterCollapseContent.classList.remove('expanded');
+            filterArrow.classList.remove('expanded'); // Garante que a seta esteja para baixo inicialmente
+
+            filterToggleHeader.addEventListener('click', () => {
+                filterCollapseContent.classList.toggle('expanded');
+                filterArrow.classList.toggle('expanded');
+            });
+        });
+    </script>
+</body>
+</html>

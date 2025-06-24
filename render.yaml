@@ -1,0 +1,56 @@
+# render.yaml
+# Este ficheiro define como o Render vai desdobrar a sua aplicação Django.
+
+services:
+  - type: web # Define que este é um serviço web (um servidor HTTP)
+    name: rede-bellas-saas # Um nome único para o seu serviço no Render. Escolha um nome descritivo.
+    env: python # O ambiente de execução é Python
+    region: oregon # Região para hospedar a sua aplicação (ex: oregon, frankfurt, singapore). Escolha a mais próxima dos seus utilizadores.
+    plan: free # Plano gratuito do Render.
+    numInstances: 1 # Número de instâncias (para o plano gratuito, normalmente 1)
+
+    # O caminho para o seu ficheiro `manage.py` e `requirements.txt`
+    # Certifique-se de que estes caminhos estão corretos em relação à raiz do seu repositório Git.
+    rootDir: backend # A pasta onde o Render deve encontrar o seu código (onde manage.py está)
+
+    # Comandos a executar para construir a sua aplicação
+    buildCommand: |
+      pip install -r requirements.txt # Instala as dependências do requirements.txt
+      python manage.py collectstatic --noinput # Coleta todos os ficheiros estáticos
+
+    # Comando para iniciar o seu servidor Gunicorn
+    # `config.wsgi:application` aponta para o seu ficheiro WSGI
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+
+    # Uma URL que o Render irá verificar regularmente para saber se a sua aplicação está "viva"
+    healthCheckPath: /admin/login/ # Use uma rota leve como o login do admin
+
+    # Variáveis de Ambiente
+    # Estas variáveis serão injetadas no ambiente da sua aplicação no Render.
+    # Não inclua informações sensíveis aqui diretamente; use o dashboard do Render ou referências.
+    envVars:
+      - key: SECRET_KEY # A chave secreta do Django (gerada automaticamente pelo Render ou defina a sua)
+        generateValue: true # Render vai gerar um valor aleatório e seguro
+      - key: DATABASE_URL # A cadeia de conexão para a sua base de dados Supabase
+        # ESTA LINHA SERÁ PREENCHIDA NO DASHBOARD DO RENDER.
+        # NÃO COLOQUE A SUA SENHA REAL AQUI NO FICHEIRO GIT!
+        # Exemplo (NÃO COLOQUE A SENHA AQUI): postgresql://postgres.hnmicosgjgwyyfvqxshk:YOUR_PASSWORD@aws-0-sa-east-1.pooler.supabase.com:5432/postgres
+        # Para testar localmente com o .env, mantenha o default no settings.py.
+        # No Render Dashboard, adicione a variável DATABASE_URL e o seu valor.
+      - key: DJANGO_DEBUG # Define o DEBUG do Django (deve ser False em produção)
+        value: "False"
+      - key: ALLOWED_HOSTS # Lista de hosts permitidos (o domínio do seu Render app e outros)
+        # Substitua "seu-app-django.onrender.com" pelo domínio real que o Render irá atribuir ao seu serviço
+        value: "seu-app-django.onrender.com,127.0.0.1" # Inclua 127.0.0.1 para compatibilidade
+      - key: PYTHON_VERSION # Opcional, mas recomendado para especificar a versão do Python
+        value: "3.10.13" # Escolha uma versão Python suportada pelo Render (verifique a documentação do Render)
+      - key: WEB_CONCURRENCY # Número de workers Gunicorn (pode otimizar performance)
+        value: "4" # Um bom ponto de partida para free tier ou pequenos apps.
+
+# Para bases de dados:
+# Se você quisesse que o Render criasse e gerenciasse uma base de dados PostgreSQL para você,
+# descomentaria e configuraria a secção 'databases' aqui.
+# Mas como estamos a usar o Supabase (externo), não precisamos desta secção.
+# databases:
+#   - name: meu-banco-render
+#     plan: free
