@@ -20,8 +20,8 @@ services:
       python manage.py collectstatic --noinput # Coleta todos os ficheiros estáticos
 
     # Comando para iniciar o seu servidor Gunicorn
-    # CORRIGIDO: Define PYTHONPATH para incluir o diretório base da aplicação (backend)
-    startCommand: "PYTHONPATH=$PYTHONPATH:backend gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    # CORRIGIDO: Remover PYTHONPATH daqui e definir como uma envVar
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 
     # Uma URL que o Render irá verificar regularmente para saber se a sua aplicação está "viva"
     healthCheckPath: /admin/login/ # Use uma rota leve como o login do admin
@@ -30,6 +30,9 @@ services:
     # Estas variáveis serão injetadas no ambiente da sua aplicação no Render.
     # Não inclua informações sensíveis aqui diretamente; use o dashboard do Render ou referências.
     envVars:
+      # NOVO: Definir PYTHONPATH explicitamente como uma variável de ambiente
+      - key: PYTHONPATH
+        value: "/opt/render/project/src" # Caminho ABSOLUTO onde o Render coloca o seu `rootDir` (a pasta `backend`)
       - key: SECRET_KEY # A chave secreta do Django (gerada automaticamente pelo Render ou defina a sua)
         generateValue: true # Render vai gerar um valor aleatório e seguro
       - key: DATABASE_URL # A cadeia de conexão para a sua base de dados Supabase
