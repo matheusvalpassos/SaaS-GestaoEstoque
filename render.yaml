@@ -16,11 +16,13 @@ services:
     # Comandos a executar para construir a sua aplicação
     buildCommand: |
       pip install -r requirements.txt # Instala as dependências do requirements.txt
+      pip install gunicorn # Adicionar uma instalação explícita do gunicorn para garantir que é registado
       python manage.py collectstatic --noinput # Coleta todos os ficheiros estáticos
 
     # Comando para iniciar o seu servidor Gunicorn
-    # NOVO: Inicia o Gunicorn explicitamente via módulo Python para garantir que é encontrado
-    startCommand: "python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    # CORRIGIDO: O Gunicorn precisa do caminho relativo CORRETO para o módulo wsgi
+    # Como rootDir é 'backend', o caminho para wsgi.py é 'config.wsgi'
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 
     # Uma URL que o Render irá verificar regularmente para saber se a sua aplicação está "viva"
     healthCheckPath: /admin/login/ # Use uma rota leve como o login do admin
