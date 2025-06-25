@@ -18,10 +18,16 @@ services:
       pip install -r requirements.txt # Instala as dependências do requirements.txt
       pip install gunicorn # Adicionar uma instalação explícita do gunicorn para garantir que é registado
       python manage.py collectstatic --noinput # Coleta todos os ficheiros estáticos
+      # NOVO PASSO DE DEBUG: Listar o conteúdo da pasta src para verificar a estrutura
+      echo "Conteúdo de /opt/render/project/src/:"
+      ls -F /opt/render/project/src/
+      echo "Conteúdo de /opt/render/project/src/config/:"
+      ls -F /opt/render/project/src/config/
 
     # Comando para iniciar o seu servidor Gunicorn
-    # CORRIGIDO: A forma mais robusta de definir PYTHONPATH e executar Gunicorn
-    startCommand: "PYTHONPATH=/opt/render/project/src python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    # CORRIGIDO: Define PYTHONPATH explicitamente e usa `exec` para iniciar o Gunicorn
+    # O `exec` é uma boa prática em scripts de inicialização
+    startCommand: "exec PYTHONPATH=/opt/render/project/src python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 
     # Uma URL que o Render irá verificar regularmente para saber se a sua aplicação está "viva"
     healthCheckPath: /admin/login/ # Use uma rota leve como o login do admin
@@ -30,7 +36,6 @@ services:
     # Estas variáveis serão injetadas no ambiente da sua aplicação no Render.
     # Não inclua informações sensíveis aqui diretamente; use o dashboard do Render ou referências.
     envVars:
-      # Removido a definição de PYTHONPATH aqui, pois será definida no startCommand
       - key: SECRET_KEY # A chave secreta do Django (gerada automaticamente pelo Render ou defina a sua)
         generateValue: true # Render vai gerar um valor aleatório e seguro
       - key: DATABASE_URL # A cadeia de conexão para a sua base de dados Supabase
