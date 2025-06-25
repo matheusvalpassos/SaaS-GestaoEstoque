@@ -3,32 +3,24 @@ FROM python:3.9-slim-buster
 
 # Definir variáveis de ambiente essenciais para o Python e o Django.
 ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE backend.config.settings
+ENV DJANGO_SETTINGS_MODULE config.settings # AGORA: config.settings (pois config está na raiz do WORKDIR)
 
-# Define o diretório de trabalho inicial dentro do contentor.
+# Definir o diretório de trabalho dentro do contentor para /app
+# Este será o diretório onde o seu repositório Git será clonado.
 WORKDIR /app
 
-# Copia todo o conteúdo do seu repositório Git (o contexto atual) para /app no contentor.
+# Copia todo o conteúdo do seu repositório Git para o contentor
 COPY . /app
 
-# Muda o diretório de trabalho para a pasta 'backend'.
-WORKDIR /app/backend
+# Instalar as dependências do Python a partir do ficheiro requirements.txt
+# AGORA: requirements.txt está diretamente em /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Instalar dependências de sistema para compilação de pacotes Python
-# 'build-essential' (para gcc, etc.) e 'libpq-dev' (para psycopg2)
-# Limpeza de cache do apt para reduzir o tamanho da imagem
-RUN apt-get update && apt-get install -y build-essential libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# NOVO: Garante que o ficheiro requirements.txt está no formato UNIX (LF)
-# E tente instalar as dependências Python listadas.
-# Também adiciona --break-system-packages para Python 3.10+ (embora estejamos em 3.9)
-# Isso é uma precaução para algumas instalações em sistemas baseados em Debian
-RUN sed -i 's/\r$//' requirements.txt && \
-    pip install --no-cache-dir -r requirements.txt --break-system-packages
-
-# Executa o comando 'collectstatic' do Django para reunir todos os ficheiros estáticos.
+# Executar o comando collectstatic do Django para reunir todos os ficheiros estáticos.
+# AGORA: manage.py está diretamente em /app/manage.py
 RUN python manage.py collectstatic --noinput
 
-# Define o comando que será executado quando o contentor iniciar.
+# Definir o comando que será executado quando o contentor iniciar.
+# O Railway injeta $PORT automaticamente.
+# AGORA: wsgi.py está diretamente em /app/config/wsgi.py, então a referência é 'config.wsgi'
 CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "config.wsgi:application"]
