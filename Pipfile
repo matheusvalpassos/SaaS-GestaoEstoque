@@ -1,0 +1,28 @@
+# saas_projeto/Pipfile
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Django = "==5.1.6" # Mantenha a versão exata que está a usar
+gunicorn = "*"
+"dj-database-url" = "*"
+"psycopg2-binary" = "*"
+whitenoise = "*"
+"python-decouple" = "*"
+"django-widget-tweaks" = "*"
+"django-ckeditor" = "*" # Se usa CKEditor
+"django-ckeditor-5" = "*" # Se usa CKEditor 5
+"django-js-asset" = "*" # Usado por CKEditor e outras libs JS
+"django-ninja" = "*" # Se usa Django Ninja para APIs
+pillow = "*" # Se usa ImageField nas suas models
+weasyprint = "*" # Para geração de PDFs
+sqlparse = "*" # Geralmente uma dependência do Django, mas pode listar
+
+[dev-packages]
+black = "*" # Ferramentas de formatação de código
+pipenv = "*" # Para gerir o ambiente (não é dependência da app em produção)
+
+[requires]
+python_version = "3.13"

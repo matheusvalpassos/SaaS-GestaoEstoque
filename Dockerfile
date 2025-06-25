@@ -1,15 +1,18 @@
 # Usa uma imagem base Python com a versão específica para garantir consistência.
+# A versão 3.9 é uma boa escolha para estabilidade.
 FROM python:3.9-slim-buster
 
 # Definir variáveis de ambiente essenciais para o Python e o Django.
 ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE config.settings # AGORA: config.settings (pois config está na raiz do WORKDIR)
+# CORRIGIDO: O módulo de settings está agora na raiz do WORKDIR ('config.settings')
+ENV DJANGO_SETTINGS_MODULE config.settings
 
-# Definir o diretório de trabalho dentro do contentor para /app
-# Este será o diretório onde o seu repositório Git será clonado.
+# Definir o diretório de trabalho inicial dentro do contentor.
+# /app será o local onde o seu repositório Git será clonado.
 WORKDIR /app
 
-# Copia todo o conteúdo do seu repositório Git para o contentor
+# Copia todo o conteúdo do seu repositório Git (o contexto atual) para /app no contentor.
+# Assumimos que o manage.py, config/, core/, requirements.txt estão agora na raiz do repositório.
 COPY . /app
 
 # NOVO: Instalar dependências de sistema para compilação de pacotes Python
@@ -18,15 +21,15 @@ COPY . /app
 RUN apt-get update && apt-get install -y build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar as dependências do Python a partir do ficheiro requirements.txt
-# AGORA: requirements.txt está diretamente em /app/requirements.txt
+# Instala as dependências do Python a partir do ficheiro requirements.txt
+# CORRIGIDO: O requirements.txt está agora na raiz do WORKDIR ('requirements.txt')
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Executar o comando collectstatic do Django para reunir todos os ficheiros estáticos.
-# AGORA: manage.py está diretamente em /app/manage.py
+# CORRIGIDO: O manage.py está agora na raiz do WORKDIR ('manage.py')
 RUN python manage.py collectstatic --noinput
 
 # Definir o comando que será executado quando o contentor iniciar.
 # O Railway injeta $PORT automaticamente.
-# AGORA: wsgi.py está diretamente em /app/config/wsgi.py, então a referência é 'config.wsgi'
+# CORRIGIDO: O wsgi.py está agora na raiz do WORKDIR ('config.wsgi')
 CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "config.wsgi:application"]
