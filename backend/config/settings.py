@@ -81,10 +81,12 @@ WSGI_APPLICATION = (
 # conn_max_age: Reutiliza conexões de base de dados, bom para performance.
 DATABASES = {
     "default": dj_database_url.config(
+        # Quando o Railway injetar DATABASE_URL, este valor será usado.
+        # O valor default local (sqlite) só será usado se DATABASE_URL não for definida.
         default=config(
             "DATABASE_URL", default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
         ),
-        conn_max_age=600,  # 10 minutos
+        conn_max_age=600,
     )
 }
 
