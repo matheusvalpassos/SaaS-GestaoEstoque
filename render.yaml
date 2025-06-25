@@ -20,8 +20,10 @@ services:
       python manage.py collectstatic --noinput # Coleta todos os ficheiros estáticos
 
     # Comando para iniciar o seu servidor Gunicorn
-    # CORRIGIDO: Referência direta ao módulo WSGI com 'backend.' prefixo
-    startCommand: "gunicorn backend.config.wsgi:application --bind 0.0.0.0:$PORT"
+    # CORRIGIDO: Referência direta ao módulo WSGI sem o 'backend.' prefixo no startCommand,
+    # uma vez que o wsgi.py já está a adicionar /opt/render/project/src ao sys.path.
+    # O Gunicorn assume que o módulo APP_MODULE é relativo ao PYTHONPATH.
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 
     # Uma URL que o Render irá verificar regularmente para saber se a sua aplicação está "viva"
     healthCheckPath: /admin/login/ # Use uma rota leve como o login do admin
@@ -42,7 +44,7 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS # Lista de hosts permitidos (o domínio do seu Render app e outros)
         # Substitua "seu-app-django.onrender.com" pelo domínio real que o Render irá atribuir ao seu serviço
-        value: "https://rede-bellas-saas.onrender.com,127.0.0.1" # Inclua 127.0.0.1 para compatibilidade
+        value: "seu-app-django.onrender.com,127.0.0.1" # Inclua 127.0.0.1 para compatibilidade
       - key: PYTHON_VERSION # Opcional, mas recomendado para especificar a versão do Python
         value: "3.9.18" # Mantendo Python 3.9.18
       - key: WEB_CONCURRENCY # Número de workers Gunicorn (pode otimizar performance)

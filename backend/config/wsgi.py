@@ -1,13 +1,13 @@
 # backend/config/wsgi.py
 import os
-
-# REMOVER: A importação de sys já não é necessária se a linha sys.path.insert foi removida
-# import sys
+import sys  # NOVO: Importar sys para manipulação de caminho
 
 from django.core.wsgi import get_wsgi_application
 
-# REMOVER: Esta linha deve ser removida
-# sys.path.insert(0, '/opt/render/project/src')
+# Adicionar o diretório raiz do projeto Django (pasta 'backend') ao sys.path
+# '/opt/render/project/src' é o caminho absoluto onde o Render copia o seu rootDir (backend)
+# Isso garante que Python pode encontrar 'config' e 'core'
+sys.path.insert(0, "/opt/render/project/src")
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
