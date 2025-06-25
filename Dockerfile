@@ -21,6 +21,10 @@ COPY . /app
 RUN apt-get update && apt-get install -y build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# NOVO: Atualizar pip e setuptools para as versões mais recentes
+# Isso pode resolver problemas de instalação com pacotes mais novos
+RUN pip install --no-cache-dir --upgrade pip setuptools
+
 # Instala as dependências do Python a partir do ficheiro requirements.txt
 # CORRIGIDO: O requirements.txt está agora na raiz do WORKDIR ('requirements.txt')
 # NOVO: Adicionado --verbose para mais detalhes no log
