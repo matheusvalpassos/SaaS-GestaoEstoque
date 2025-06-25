@@ -1,0 +1,360 @@
+{# backend/core/templates/resgates/relatorio_resgates_pdf.html #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Resgates</title>
+    <style>
+        /* Regra @page para orientação e margens do documento */
+        @page {
+            size: A4 portrait; /* Define o tamanho A4 e a orientação paisagem */
+            margin: 10mm; /* Define margens de 10mm para todas as bordas da página */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            font-size: 10pt; /* Tamanho da fonte base para o corpo do PDF */
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 0; /* Ajustado para evitar duplicação com @page margin */
+            box-sizing: border-box;
+        }
+        .main-header-info { /* NOVO: Para agrupar título do relatório, data de geração e ID do relatório */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-header-info h1 {
+            font-size: 1.8em; /* Levemente menor */
+            color: #DB0020;
+            margin-bottom: 3px; /* Reduzido */
+        }
+        .main-header-info .report-meta { /* Estilos para a data de geração e ID do relatório */
+            font-size: 0.8em; /* Levemente menor */
+            color: #555;
+            margin-top: 5px; /* Espaçamento entre o título e meta */
+        }
+        .main-header-info .report-id-display { /* Estilo específico para o ID do relatório */
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #4A5568;
+            padding: 3px 8px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            display: inline-block; /* Para que o padding e borda funcionem */
+            margin-left: 10px; /* Espaço após a data de geração */
+        }
+
+        /* --- Estilos para o LAYOUT DE MANIFESTO DE LOTE --- */
+        .manifesto-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .manifesto-header h1 {
+            font-size: 2.2em; /* Título maior para o manifesto */
+            color: #0056b3; /* Uma cor diferente para distinção */
+            margin-bottom: 5px;
+        }
+        .manifesto-header .tracking-code-display {
+            font-size: 2.8em; /* Código de rastreamento grande */
+            font-weight: bold;
+            color: #DB0020;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: 2px dashed #A0AEC0;
+            display: inline-block;
+            background-color: #F7FAFC;
+            border-radius: 8px;
+        }
+        .manifesto-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Duas colunas para informações */
+            gap: 15px 25px; /* Espaçamento entre as caixas de informação */
+            margin-bottom: 20px;
+        }
+        .info-box {
+            border: 1px solid #e2e8f0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+        }
+        .info-box h4 {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #4A5568;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+        }
+        .info-box p {
+            margin: 0 0 3px 0;
+            font-size: 0.9em;
+        }
+        .info-box strong {
+            color: #2D3748;
+        }
+        .manifesto-total-points {
+            text-align: right;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #DB0020;
+            margin-top: 15px;
+        }
+
+        /* --- Estilos para o LAYOUT DE RELATÓRIO GERAL (EXISTENTE, MAIS COMPACTO) --- */
+        .filters {
+            margin-bottom: 10px; /* Reduzido */
+            padding: 5px 8px; /* Reduzido o padding */
+            border: 1px solid #eee;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            font-size: 0.75em; /* Reduzido */
+            display: flex; /* Usando flexbox para um layout mais fluido e compacto */
+            flex-wrap: wrap; /* Permite que os itens quebrem a linha se não houver espaço */
+            gap: 5px 15px; /* Reduzido o espaçamento entre itens */
+            align-items: center; /* Alinha o conteúdo verticalmente ao centro */
+        }
+        .filters strong {
+            color: #4A5568;
+            flex-basis: 100%; /* Faz o título ocupar toda a linha */
+            margin-bottom: 5px; /* Reduzido */
+        }
+        .filter-item {
+            display: inline-flex; /* Torna os itens inline com flexbox */
+            white-space: nowrap; /* Evita que a linha quebre dentro do item de filtro */
+            align-items: baseline;
+            gap: 5px; /* Espaço entre o label e o valor */
+        }
+        .filter-item span:first-child {
+            font-weight: bold;
+            color: #2D3748;
+            flex-shrink: 0;
+        }
+        
+        /* --- Estilos de Tabela (Comuns a ambos os layouts) --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px; /* Reduzido o padding das células da tabela */
+            text-align: left;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-size: 0.75em; /* Levemente menor para cabeçalhos da tabela */
+            color: #4A5568;
+            text-transform: uppercase;
+        }
+        td {
+            font-size: 0.65em; /* Levemente menor para dados da tabela */
+        }
+        
+        /* Larguras das colunas para o MANIFESTO DE LOTE (com Código primeiro e mais detalhes) */
+        .manifesto-table th:nth-child(1), .manifesto-table td:nth-child(1) { width: 18%; } /* Código */
+        .manifesto-table th:nth-child(2), .manifesto-table td:nth-child(2) { width: 25%; } /* Produto */
+        .manifesto-table th:nth-child(3), .manifesto-table td:nth-child(3) { width: 10%; } /* Quantidade */
+        .manifesto-table th:nth-child(4), .manifesto-table td:nth-child(4) { width: 12%; } /* Pontos Unid */
+        .manifesto-table th:nth-child(5), .manifesto-table td:nth-child(5) { width: 15%; } /* Total Item */
+        .manifesto-table th:nth-child(6), .manifesto-table td:nth-child(6) { width: 20%; } /* Status */
+        
+        /* Larguras das colunas para o RELATÓRIO GERAL (7 colunas = 100% após remover "Código") */
+        .general-report-table th:nth-child(1), .general-report-table td:nth-child(1) { width: 17%; } /* Produto */
+        .general-report-table th:nth-child(2), .general-report-table td:nth-child(2) { width: 17%; } /* Cliente */
+        .general-report-table th:nth-child(3), .general-report-table td:nth-child(3) { width: 13%; } /* Posto */
+        .general-report-table th:nth-child(4), .general-report-table td:nth-child(4) { width: 9%; }  /* Tipo */
+        .general-report-table th:nth-child(5), .general-report-table td:nth-child(5) { width: 15%; } /* Gerado Em */
+        .general-report-table th:nth-child(6), .general-report-table td:nth-child(6) { width: 10%; } /* Status */
+        .general-report-table th:nth-child(7), .general-report-table td:nth-child(7) { width: 19%; } /* Pontos */
+
+        .total-info {
+            text-align: right;
+            font-size: 1.0em; /* Levemente menor */
+            font-weight: bold;
+            margin-top: 8px; /* Reduzido */
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.6em; /* Reduzido */
+            color: #777;
+            margin-top: 30px; /* Reduzido */
+        }
+        .signature-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            font-size: 0.8em;
+        }
+        .signature-block {
+            text-align: center;
+            width: 45%; /* Ajusta a largura para duas colunas */
+        }
+        .signature-line {
+            border-top: 1px solid #718096;
+            margin-top: 20px; /* Espaço para a assinatura */
+            margin-bottom: 5px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {# NOVO: Cabeçalho unificado para Título, Data de Geração e ID do Relatório #}
+        <div class="main-header-info">
+            {% if is_manifesto_lote %}
+                <h1>MANIFESTO DE ENTREGA DE RESGATES</h1>
+            {% else %}
+                <h1>RELATÓRIO DE RESGATES</h1>
+            {% endif %}
+            <p class="report-meta">
+                Gerado em: {{ current_generation_time|date:"d/m/Y H:i" }}
+                <span class="report-id-display">Código de Rastreamento: {{ report_id }}</span>
+            </p>
+        </div>
+
+        {# Lógica condicional para o corpo do relatório #}
+        {% if is_manifesto_lote %}
+            <div class="manifesto-header">
+                {# O H1 e a data de geração já estão no main-header-info #}
+                <div class="tracking-code-display">{{ codigo_rastreamento_pdf }}</div>
+            </div>
+
+            <div class="manifesto-info-grid">
+                <div class="info-box">
+                    <h4>INFORMAÇÕES DO LOTE:</h4>
+                    <p><strong>Posto de Destino:</strong> {{ posto_nome|default:"Não Informado" }}</p>
+                    <p><strong>Data de Emissão Lote:</strong> {{ data_geracao_inicio_pdf|date:"d/m/Y H:i"|default:"Qualquer" }}</p>
+                </div>
+                <div class="info-box">
+                    <h4>INFORMAÇÕES DO CLIENTE (Principal):</h4>
+                    <p><strong>Nome:</strong> {{ cliente_nome|default:"Não Informado" }}</p>
+                    <p><strong>CPF:</strong> {{ cliente_cpf|default:"Não Informado" }}</p>
+                </div>
+            </div>
+
+            {# Tabela de itens dentro do lote #}
+            {% if resgates %}
+                <h4 class="section-title">ITENS NESTE LOTE:</h4>
+                <table class="manifesto-table"> {# Classe para larguras específicas do manifesto #}
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Produto</th>
+                            <th>Qtde</th>
+                            <th>Pontos Unid.</th>
+                            <th>Total Item</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resgate in resgates %}
+                            <tr>
+                                <td>{{ resgate.codigo_rastreamento }}</td>
+                                <td>{{ resgate.produto.nome }}</td>
+                                <td>{{ resgate.quantidade }}</td>
+                                <td>{{ resgate.produto.pontos_necessarios }}</td>
+                                <td>{{ resgate.pontos_totais_resgatados }}</td>
+                                <td>{{ resgate.get_status_display }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="manifesto-total-points">
+                    Pontos Totais do Lote: {{ total_pontos_lote }}
+                </div>
+            {% else %}
+                <p>Nenhum item encontrado para este código de rastreamento.</p>
+            {% endif %}
+
+        {% else %} {# Layout padrão de relatório geral, se não for manifesto de lote #}
+            {# O H1 e a data de geração e ID já estão no main-header-info #}
+            <div class="filters">
+                <strong>Filtros Aplicados:</strong>
+                <div class="filter-item">
+                    <span>Posto:</span>
+                    <span>{{ posto_nome|default:"Todos" }}</span>
+                </div>
+                <div class="filter-item">
+                    <span>Produto:</span>
+                    <span>{{ produto_nome|default:"Todos" }}</span>
+                </div>
+                <div class="filter-item">
+                    <span>Gerado de:</span>
+                    <span>{{ data_geracao_inicio_pdf|date:"d/m/Y H:i"|default:"Qualquer" }}</span>
+                </div>
+                <div class="filter-item">
+                    <span>Gerado até:</span>
+                    <span>{{ data_geracao_fim_pdf|date:"d/m/Y H:i"|default:"Qualquer" }}</span>
+                </div>
+                <div class="filter-item">
+                    <span>Código Rastr.:</span>
+                    <span>{{ codigo_rastreamento_pdf|default:"Todos" }}</span>
+                </div>
+            </div>
+
+            {% if resgates %}
+                <table class="general-report-table"> {# Adicionada classe específica para o relatório geral #}
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Cliente</th>
+                            <th>Posto</th>
+                            <th>Tipo</th>
+                            <th>Gerado Em</th>
+                            <th>Status</th>
+                            <th>Pontos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resgate in resgates %}
+                            <tr>
+                                <td>{{ resgate.produto.nome }}</td>
+                                <td>{{ resgate.cliente.nome_completo }}</td>
+                                <td>{{ resgate.posto_resgate.nome }}</td>
+                                <td>{{ resgate.tipo_resgate }}</td>
+                                <td>{{ resgate.gerado_em|date:"d/m/Y H:i" }}</td>
+                                <td>{{ resgate.get_status_display }}</td>
+                                <td>{{ resgate.pontos_totais_resgatados }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="total-info">
+                    Total de Resgates no Relatório: {{ resgates|length }}
+                </div>
+            {% else %}
+                <p>Nenhum resgate encontrado com os filtros aplicados.</p>
+            {% endif %}
+        {% endif %}
+
+        <div class="footer">
+            <p>Este é um relatório eletrônico.</p>
+            {# Seção para Assinaturas - Comum a ambos os layouts #}
+            <div class="signature-section">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Assinatura do Recebedor</p>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Assinatura do Motorista / Responsável</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

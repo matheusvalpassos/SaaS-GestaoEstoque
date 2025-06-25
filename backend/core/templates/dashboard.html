@@ -1,0 +1,337 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Rede Bellas</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+    {# NOVO: Incluir Font Awesome via CDN #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos CSS para animações (reutilizados da lista de resgates) */
+        .fade-in-item {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-bounce-once {
+            animation: bounce 1s ease-in-out 1;
+        }
+        .animate-pulse-once {
+            animation: pulse 1.5s ease-in-out 1;
+        }
+        /* Efeito de zoom no hover para os ícones dentro dos botões e cards */
+        .group:hover .icon-hover-zoom {
+            transform: scale(1.1);
+            transition: transform 0.3s ease-out;
+        }
+        /* Efeito de elevação para os cards no hover */
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Sombra mais pronunciada */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-inter antialiased text-gray-800">
+    {# Inclua a navbar aqui #}
+    {% include 'partials/_navbar.html' %}
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-[#DB0020] mb-8 text-center animate-pulse-once">
+            Olá, {{ user.username }}! Bem-vindo(a) ao Dashboard!
+        </h1>
+        
+        <p class="text-lg text-gray-700 mb-8 text-center">Aqui você terá uma visão geral do seu sistema de gerenciamento de resgates.</p>
+
+        {# BLOCO PARA EXIBIR MENSAGENS DO DJANGO (estilização aprimorada) #}
+        {% if messages %}
+            <div class="space-y-3 mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg shadow-md {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500{% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500{% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %} flex items-center transform transition-transform hover:scale-[1.01] animate-fade-in">
+                        <svg class="w-5 h-5 mr-3 {% if message.tags == 'success' %}text-green-600{% elif message.tags == 'error' %}text-red-600{% elif message.tags == 'warning' %}text-yellow-600{% else %}text-blue-600{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            {% if message.tags == 'success' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            {% elif message.tags == 'error' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            {% else %}
+                                <path fill-rule="evenodd" d="M8.257 3.332a.995.995 0 011.486 0l3.054 5.09a1 1 0 01-.743 1.603H5.946a1 1 0 01-.743-1.603l3.054-5.09z" clip-rule="evenodd"></path>
+                            {% endif %}
+                        </svg>
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Seção de Botões de Ação Globais - Todos na mesma linha com ícones #}
+        <div class="text-center flex flex-wrap justify-center gap-x-4 gap-y-4 mb-10 fade-in-item" data-delay="0.1"> {# Ajustado gap-x e gap-y para um espaçamento mais limpo #}
+            <a href="{% url 'products_list' %}" class="inline-flex items-center bg-[#DB0020] hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Gerenciar Produtos #}
+                <i class="fa-solid fa-boxes-stacked mr-2 icon-hover-zoom fa-lg"></i>
+                Gerenciar Produtos
+            </a>
+            <a href="{% url 'client_list' %}" class="inline-flex items-center bg-[#DB0020] hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Gerenciar Clientes #}
+                <i class="fa-solid fa-users mr-2 icon-hover-zoom fa-lg"></i>
+                Gerenciar Clientes
+            </a>
+            <a href="{% url 'resgate_list' %}" class="inline-flex items-center bg-[#DB0020] hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Ver Resgates #}
+                <i class="fa-solid fa-ticket-alt mr-2 icon-hover-zoom fa-lg"></i>
+                Ver Resgates
+            </a>
+            <a href="{% url 'resgate_upload_parse' %}" class="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Importar Resgates #}
+                <i class="fa-solid fa-cloud-upload-alt mr-2 icon-hover-zoom fa-lg"></i>
+                Importar Resgates
+            </a>
+            {# BOTÃO: Gerar Relatório de Resgates (PDF) #}
+            <a href="{% url 'resgate_list' %}?format=pdf" target="_blank" class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Gerar Relatório #}
+                <i class="fa-solid fa-file-pdf mr-2 icon-hover-zoom fa-lg"></i>
+                Gerar Relatório
+            </a>
+            {# NOVO BOTÃO: Ver Relatórios Gerados #}
+            <a href="{% url 'report_list' %}" class="inline-flex items-center bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 group">
+                {# Ícone Font Awesome para Ver Relatórios #}
+                <i class="fa-solid fa-file-invoice mr-2 icon-hover-zoom fa-lg"></i>
+                Ver Relatórios
+            </a>
+        </div>
+
+        {# Seção de Cards de Estatísticas #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {# Card de Produtos Cadastrados #}
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#DB0020] fade-in-item group card-hover-effect" data-delay="0.2">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Produtos Cadastrados #}
+                    <i class="fa-solid fa-boxes-stacked mr-2 icon-hover-zoom fa-lg"></i>
+                    Produtos Cadastrados
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ total_products }}</p>
+                <p class="text-gray-600">Total de produtos disponíveis para resgate.</p>
+            </div>
+            {# Card de Resgates Pendentes #}
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500 fade-in-item group card-hover-effect" data-delay="0.3">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Resgates Pendentes #}
+                    <i class="fa-solid fa-hourglass-half mr-2 icon-hover-zoom fa-lg"></i>
+                    Resgates Pendentes
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ pending_resgates }}</p>
+                <p class="text-gray-600">Resgates aguardando conclusão.</p>
+            </div>
+            {# Card de Clientes Ativos #}
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 fade-in-item group card-hover-effect" data-delay="0.4">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Clientes Ativos #}
+                    <i class="fa-solid fa-user-check mr-2 icon-hover-zoom fa-lg"></i>
+                    Clientes Ativos
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ active_clients }}</p>
+                <p class="text-gray-600">Clientes com histórico de resgates.</p>
+            </div>
+
+            {# NOVOS CARDS DE ESTATÍSTICAS #}
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500 fade-in-item group card-hover-effect" data-delay="0.5">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Resgates Concluídos #}
+                    <i class="fa-solid fa-check-double mr-2 icon-hover-zoom fa-lg"></i>
+                    Resgates Concluídos
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ completed_resgates }}</p>
+                <p class="text-gray-600">Total de resgates marcados como 'Resgatado'.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-500 fade-in-item group card-hover-effect" data-delay="0.6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Pontos Totais Resgatados #}
+                    <i class="fa-solid fa-gem mr-2 icon-hover-zoom fa-lg"></i>
+                    Pontos Totais Resgatados
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ total_points_redeemed }}</p>
+                <p class="text-gray-600">Soma de pontos utilizados em todos os resgates.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-teal-500 fade-in-item group card-hover-effect" data-delay="0.7">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                    {# Ícone Font Awesome para Postos Cadastrados #}
+                    <i class="fa-solid fa-store-alt mr-2 icon-hover-zoom fa-lg"></i>
+                    Postos Cadastrados
+                </h3>
+                <p class="text-3xl font-bold text-gray-900">{{ total_postos }}</p>
+                <p class="text-gray-600">Número de postos de resgate registrados.</p>
+            </div>
+        </div>
+
+        {# Seção de Gráficos e Listas de Top Itens #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            {# Gráfico de Rosca: Resgates por Status #}
+            <div class="bg-white p-6 rounded-lg shadow-md fade-in-item" data-delay="0.8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Resgates por Status</h3>
+                <canvas id="resgateStatusChart" class="w-full max-h-80"></canvas> {# Altura máxima para o gráfico #}
+            </div>
+
+            {# Gráfico de Barras: Resgates por Posto #}
+            <div class="bg-white p-6 rounded-lg shadow-md fade-in-item" data-delay="0.9">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Top 5 Postos por Resgates</h3>
+                <canvas id="resgatePostoChart" class="w-full max-h-80"></canvas> {# Altura máxima para o gráfico #}
+            </div>
+
+            {# Top 5 Produtos Mais Resgatados #}
+            <div class="bg-white p-6 rounded-lg shadow-md fade-in-item lg:col-span-1" data-delay="1.0"> {# lg:col-span-1 para garantir que ocupe uma coluna #}
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Top 5 Produtos Mais Resgatados</h3>
+                {% if top_products %}
+                    <ul class="space-y-3">
+                        {% for product in top_products %}
+                            <li class="flex justify-between items-center text-gray-700 text-base">
+                                <span>{{ forloop.counter }}. {{ product.produto__nome }}</span>
+                                <span class="font-bold text-indigo-700">{{ product.total_quantidade }} unidades</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-gray-600">Nenhum produto resgatado ainda.</p>
+                {% endif %}
+            </div>
+
+            {# Top 5 Clientes que mais Resgataram #}
+            <div class="bg-white p-6 rounded-lg shadow-md fade-in-item lg:col-span-1" data-delay="1.1"> {# lg:col-span-1 para garantir que ocupe uma coluna #}
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Top 5 Clientes que mais Resgataram</h3>
+                {% if top_clients %}
+                    <ul class="space-y-3">
+                        {% for client in top_clients %}
+                            <li class="flex justify-between items-center text-gray-700 text-base">
+                                <span>{{ forloop.counter }}. {{ client.cliente__nome_completo }}</span>
+                                <span class="font-bold text-green-700">{{ client.total_resgates }} resgates</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-gray-600">Nenhum cliente com resgates ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Incluir a biblioteca Chart.js #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animação de fade-in para elementos com data-delay
+            const animatedItems = document.querySelectorAll('.fade-in-item');
+            animatedItems.forEach(item => {
+                const delay = parseFloat(item.dataset.delay) * 0.1; // Ajuste o multiplicador
+                item.style.animationDelay = `${delay}s`;
+                // A classe 'fade-in-item' já está aplicada no HTML, então a animação deve disparar
+            });
+
+            // Dados dos gráficos (passados do Django)
+            const statusLabels = JSON.parse('{{ status_labels|safe }}');
+            const statusCounts = JSON.parse('{{ status_counts|safe }}');
+            const postoLabels = JSON.parse('{{ posto_labels|safe }}');
+            const postoCounts = JSON.parse('{{ posto_counts|safe }}');
+
+            // Cores padrão para os gráficos
+            const backgroundColors = [
+                'rgba(255, 99, 132, 0.7)',  // Vermelho
+                'rgba(54, 162, 235, 0.7)',  // Azul
+                'rgba(255, 206, 86, 0.7)',  // Amarelo
+                'rgba(75, 192, 192, 0.7)',  // Verde-água
+                'rgba(153, 102, 255, 0.7)', // Roxo
+                'rgba(255, 159, 64, 0.7)',  // Laranja
+                'rgba(199, 199, 199, 0.7)', // Cinza
+                'rgba(83, 102, 255, 0.7)',  // Azul claro
+            ];
+            const borderColors = [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)',
+                'rgba(83, 102, 255, 1)',
+            ];
+
+            // Gráfico de Rosca: Resgates por Status
+            const ctxStatus = document.getElementById('resgateStatusChart');
+            if (ctxStatus) {
+                new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusCounts,
+                            backgroundColor: backgroundColors.slice(0, statusLabels.length),
+                            borderColor: borderColors.slice(0, statusLabels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Importante para controlar o tamanho
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: false, // Título já no H3
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de Barras: Resgates por Posto
+            const ctxPosto = document.getElementById('resgatePostoChart');
+            if (ctxPosto) {
+                new Chart(ctxPosto, {
+                    type: 'bar',
+                    data: {
+                        labels: postoLabels,
+                        datasets: [{
+                            label: 'Número de Resgates',
+                            data: postoCounts,
+                            backgroundColor: backgroundColors.slice(0, postoLabels.length),
+                            borderColor: borderColors.slice(0, postoLabels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Importante para controlar o tamanho
+                        plugins: {
+                            legend: {
+                                display: false, // Legenda não é tão necessária para uma única série
+                            },
+                            title: {
+                                display: false, // Título já no H3
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 // Garante que o eixo Y mostre números inteiros
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+{# backend/core/templates/resgates/recibo_pdf_template.html #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo de Resgate - {{ resgate.codigo_rastreamento }}</title>
+    
+    <style>
+        /* Regra @page para definir o tamanho A4 e margens */
+        @page {
+            size: A4 portrait; /* Define o tamanho A4 e a orientação retrato (padrão para recibos) */
+            margin: 15mm; /* Margens de 15mm em todas as bordas para mais espaço útil */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; /* Garante que a fonte seja usada no PDF */
+            margin: 0;
+            padding: 0;
+            color: #333;
+            font-size: 10pt; /* Tamanho da fonte base para legibilidade na impressão */
+        }
+        .recibo-container {
+            width: 100%; /* Ocupa 100% da largura disponível dentro das margens da página */
+            margin: 0 auto;
+            padding: 0; /* O padding é controlado pela margem do @page */
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px; /* Espaçamento reduzido */
+        }
+        .header h2 {
+            font-size: 1.8em; /* Levemente menor para um recibo */
+            color: #DB0020;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 0.8em; /* Levemente menor */
+            color: #666; /* Um pouco mais suave */
+        }
+        .header img {
+            height: 50px; /* Ajuste o tamanho do logo para o PDF, levemente menor */
+            margin-top: 10px; /* Espaçamento reduzido */
+        }
+        .section-title {
+            font-size: 1.1em; /* Levemente menor */
+            font-weight: bold;
+            color: #4A5568;
+            margin-bottom: 8px; /* Espaçamento reduzido */
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px; /* Espaçamento reduzido */
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px; /* Espaçamento reduzido */
+            margin-bottom: 15px; /* Espaçamento reduzido */
+        }
+        .info-block p {
+            margin: 0 0 3px 0; /* Espaçamento reduzido */
+            font-size: 0.85em; /* Levemente menor */
+        }
+        .total-points {
+            font-size: 1.3em; /* Levemente menor */
+            font-weight: bold;
+            color: #DB0020;
+            margin-top: 10px; /* Espaçamento reduzido */
+        }
+        .tracking-code-box {
+            text-align: center;
+            border: 1px dashed #A0AEC0;
+            padding: 15px; /* Reduzido o padding */
+            margin-top: 25px; /* Reduzido o margin-top */
+            margin-bottom: 25px; /* Reduzido o margin-bottom */
+            background-color: #F7FAFC;
+            border-radius: 6px;
+        }
+        .tracking-code-box h4 {
+            font-size: 1.1em; /* Levemente menor */
+            color: #4A5568;
+            margin-bottom: 8px; /* Espaçamento reduzido */
+        }
+        .tracking-code {
+            font-size: 2em; /* Levemente menor para o código de rastreamento */
+            font-family: 'Inter', monospace;
+            letter-spacing: 1.5px; /* Levemente menor */
+            color: #2D3748;
+            word-break: break-all;
+        }
+        .signatures-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px; /* Espaçamento reduzido */
+            text-align: center;
+            margin-top: 40px; /* Espaçamento reduzido */
+        }
+        .signature-line {
+            border-top: 1px solid #718096;
+            margin-bottom: 5px;
+            width: 70%; /* Levemente menor */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .signatures-grid p {
+            font-size: 0.8em; /* Levemente menor */
+            color: #666;
+        }
+        .signatures-grid p.font-semibold {
+            font-size: 0.9em; /* Levemente menor */
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.65em; /* Levemente menor */
+            color: #718096;
+            margin-top: 30px; /* Reduzido */
+        }
+        
+        /* Ajuste para o bloco do item resgatado */
+        .item-resgatado-block {
+            border: 1px solid #E2E8F0;
+            padding: 10px; /* Reduzido */
+            border-radius: 6px; /* Levemente menor */
+            background-color: #F9FAFB;
+            margin-bottom: 15px; /* Reduzido */
+        }
+        .item-resgatado-block p {
+            margin: 0 0 3px 0;
+            font-size: 0.85em; /* Consistente com info-block */
+        }
+    </style>
+</head>
+<body>
+    <div class="recibo-container">
+        <div class="header">
+            <h2>RECIBO DE RESGATE</h2>
+            <p class="text-gray-600">Rede Bellas - Programa de Pontos</p>
+            {# O logo será carregado se o WeasyPrint puder acessá-lo via STATIC_ROOT #}
+            <img src="{% static 'img/bellas_logo.png' %}" alt="Rede Bellas Logo">
+        </div>
+
+        <div class="info-grid">
+            <div class="info-block">
+                <h4 class="section-title">INFORMAÇÕES DO CLIENTE:</h4>
+                <p><strong>Nome:</strong> {{ resgate.cliente.nome_completo }}</p>
+                <p><strong>CPF:</strong> {{ resgate.cliente.cpf|default:"Não informado" }}</p>
+                <p><strong>Total de Pontos Atuais:</strong> {{ resgate.cliente.pontos_acumulados }}</p>
+            </div>
+            <div class="info-block">
+                <h4 class="section-title">DETALHES DO RESGATE:</h4>
+                <p><strong>Data de Emissão:</strong> {{ resgate.gerado_em|date:"d/m/Y H:i" }}</p>
+                <p><strong>Vencimento:</strong> {{ resgate.vencimento|date:"d/m/Y H:i" }}</p>
+                <p><strong>Status:</strong> <span style="font-weight: bold; {% if resgate.status|lower == 'gerado' %}color: #3B82F6;{% elif resgate.status|lower == 'resgatado' %}color: #10B981;{% elif resgate.status|lower == 'vencido' %}color: #F59E0B;{% elif resgate.status|lower == 'cancelado' %}color: #EF4444;{% endif %}">
+                    {{ resgate.get_status_display }}
+                </span></p>
+                <p><strong>Tipo:</strong> {{ resgate.tipo_resgate }}</p>
+            </div>
+        </div>
+
+        <div class="item-resgatado-block"> {# Aplicada a nova classe #}
+            <h4 class="section-title">ITEM RESGATADO:</h4>
+            <p><strong>Produto:</strong> {{ resgate.produto.nome }}</p>
+            <p><strong>Pontos por Unidade:</strong> {{ resgate.produto.pontos_necessarios }}</p>
+            <p><strong>Quantidade:</strong> {{ resgate.quantidade }}</p>
+            <p class="total-points">
+                <strong>Total de Pontos Utilizados:</strong> {{ resgate.pontos_totais_resgatados }}
+            </p>
+        </div>
+
+        <div class="item-resgatado-block"> {# Reutilizando a mesma classe para o local de retirada #}
+            <h4 class="section-title">LOCAL DE RETIRADA:</h4>
+            <p><strong>Posto:</strong> {{ resgate.posto_resgate.nome }}</p>
+            <p><strong>Endereço:</strong> {{ resgate.posto_resgate.endereco|default:"Não informado" }}</p>
+        </div>
+
+        <div class="tracking-code-box">
+            <h4 class="font-semibold text-gray-800 text-lg mb-2">CÓDIGO DE RASTREAMENTO:</h4>
+            <p class="tracking-code">{{ resgate.codigo_rastreamento }}</p>
+            <p class="text-sm text-gray-500 mt-2">Apresente este código no posto para retirar seu produto.</p>
+        </div>
+
+        <div class="signatures-grid">
+            <div>
+                <hr class="signature-line">
+                <p class="text-sm">Assinatura do Recebedor</p>
+                {% if resgate.nome_recebedor %}<p class="font-semibold mt-1">{{ resgate.nome_recebedor }}</p>{% endif %}
+            </div>
+            <div>
+                <hr class="signature-line">
+                <p class="text-sm">Assinatura do Motorista / Responsável</p>
+                {% if resgate.nome_motorista %}<p class="font-semibold mt-1">{{ resgate.nome_motorista }}</p>{% endif %}
+            </div>
+        </div>
+
+        <p class="footer-text">
+            Este é um recibo eletrônico. Não requer assinatura física.
+            Gerado em {{ "now"|date:"d/m/Y H:i" }}
+        </p>
+    </div>
+</body>
+</html>
