@@ -25,23 +25,23 @@ O sistema permite:
 ## 🖥️ Telas do Sistema em Ação
 
 #### Dashboard Principal
-![Tela do Dashboard Principal](img/meusaas%20(1).png)
+![Tela do Dashboard Principal](backend/static_dev/img/meusaas%20(1).png)
 *Visão geral com estatísticas, gráficos e listas dos itens mais relevantes.*
 
 #### Gestão de Resgates
-![Tela de Gestão de Resgates](img/meusaas%20(2).png)
+![Tela de Gestão de Resgates](backend/static_dev/img/meusaas%20(2).png)
 *Interface para filtrar, visualizar e gerenciar todos os resgates.*
 
 #### Detalhes e Atualização de Status
-![Tela de Detalhes do Resgate](img/meusaas%20(3).png)
+![Tela de Detalhes do Resgate](backend/static_dev/img/meusaas%20(3).png)
 *Página de detalhes com um formulário dedicado para alterar o status de um resgate.*
 
 #### Importação em Lote
-![Tela de Importação em Lote](img/meusaas%20(4).png)
+![Tela de Importação em Lote](backend/static_dev/img/meusaas%20(4).png)
 *Ferramenta para colar e processar dados brutos, automatizando a criação de registros.*
 
 #### Relatório em PDF
-![Exemplo de Relatório em PDF](img/meusaas%20(5).png)
+![Exemplo de Relatório em PDF](backend/static_dev/img/meusaas%20(5).png)
 *Exemplo do layout profissional dos relatórios gerados em PDF.*
 
 ---
