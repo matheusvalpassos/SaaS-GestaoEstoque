@@ -91,6 +91,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 # Pasta para onde o collectstatic irá copiar os arquivos para produção
 STATIC_ROOT = BASE_DIR.parent / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static_dev",
+]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
