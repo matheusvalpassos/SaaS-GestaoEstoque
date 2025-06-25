@@ -82,15 +82,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # Configuração da Base de Dados para Produção (Supabase) e Desenvolvimento
-DATABASES = {
-    "default": dj_database_url.config(
-        # DATABASE_URL será lida da variável de ambiente (ou .env).
-        default=config(
-            "DATABASE_URL", default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
-        ),
-        conn_max_age=600,  # Reconexão após 10 minutos de inatividade (compatível com pooler do Supabase)
-    )
-}
+# Configuração do Banco de Dados (Supabase)
+DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
 
 # Password validation
@@ -127,24 +120,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+# Configurações de Arquivos Estáticos
 STATIC_URL = "/static/"
-
-# STATIC_ROOT é onde 'collectstatic' vai copiar todos os ficheiros estáticos para produção.
-# Esta pasta estará na RAIZ DO SEU PROJETO PRINCIPAL (saas_projeto/staticfiles)
-# Ajuste PROJECT_ROOT para subir um nível a partir de BASE_DIR
+STATIC_ROOT = os.path.join(BASE_DIR.parent, "staticfiles")  # Pasta na raiz do projeto
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "staticfiles")
-
-# STATICFILES_DIRS é onde o Django vai PROCURAR por ficheiros estáticos
-# DURANTE O DESENVOLVIMENTO (além dos estáticos dentro de cada app)
-# Apontamos para a pasta 'static_dev' dentro de 'backend'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static_dev"),
 ]
-
-# Habilitar o armazenamento compactado de ficheiros estáticos pelo WhiteNoise
-# Isso pode ser feito no ambiente de produção para economizar espaço e melhorar a performance
-# ATIVADO AUTOMATICAMENTE QUANDO DEBUG=False
 if not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

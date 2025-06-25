@@ -2,7 +2,7 @@
 # Exit on error
 set -o errexit
 
-# 1. Instala as dependências
+# 1. Instala as dependências (o requirements.txt está nesta pasta)
 pip install -r requirements.txt
 
 # 2. Coleta os arquivos estáticos
