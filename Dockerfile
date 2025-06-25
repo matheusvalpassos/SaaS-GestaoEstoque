@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y build-essential libpq-dev \
 
 # Instala as dependências do Python a partir do ficheiro requirements.txt
 # CORRIGIDO: O requirements.txt está agora na raiz do WORKDIR ('requirements.txt')
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+# NOVO: Adicionado --verbose para mais detalhes no log
+RUN pip install --no-cache-dir -r requirements.txt --break-system-packages --verbose
 
 # Executar o comando collectstatic do Django para reunir todos os ficheiros estáticos.
 # CORRIGIDO: O manage.py está agora na raiz do WORKDIR ('manage.py')
