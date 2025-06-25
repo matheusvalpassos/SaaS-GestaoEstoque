@@ -14,14 +14,18 @@ COPY . /app
 # Muda o diretório de trabalho para a pasta 'backend'.
 WORKDIR /app/backend
 
-# NOVO: Instalar dependências de sistema para compilação de pacotes Python
+# Instalar dependências de sistema para compilação de pacotes Python
 # 'build-essential' (para gcc, etc.) e 'libpq-dev' (para psycopg2)
 # Limpeza de cache do apt para reduzir o tamanho da imagem
 RUN apt-get update && apt-get install -y build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala as dependências Python listadas no 'requirements.txt'.
-RUN pip install --no-cache-dir -r requirements.txt
+# NOVO: Garante que o ficheiro requirements.txt está no formato UNIX (LF)
+# E tente instalar as dependências Python listadas.
+# Também adiciona --break-system-packages para Python 3.10+ (embora estejamos em 3.9)
+# Isso é uma precaução para algumas instalações em sistemas baseados em Debian
+RUN sed -i 's/\r$//' requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Executa o comando 'collectstatic' do Django para reunir todos os ficheiros estáticos.
 RUN python manage.py collectstatic --noinput
