@@ -1,7 +1,8 @@
 # backend/config/wsgi.py
 import os
 
-# import sys # REMOVER: Não precisamos mais de importar sys aqui para o sys.path.insert
+# REMOVER: A importação de sys já não é necessária se a linha sys.path.insert foi removida
+# import sys
 
 from django.core.wsgi import get_wsgi_application
 
