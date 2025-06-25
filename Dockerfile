@@ -27,4 +27,5 @@ RUN pip install --no-cache-dir -r requirements.txt --break-system-packages --ver
 RUN python manage.py collectstatic --noinput
 
 # Definir o comando que será executado quando o contentor iniciar.
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "config.wsgi:application"]
+# CORRIGIDO: Invocação explícita do Gunicorn como um módulo Python.
+CMD ["python", "-m", "gunicorn", "--bind", "0.0.0.0:$PORT", "config.wsgi:application"]
