@@ -36,6 +36,12 @@ urlpatterns = [
                 ),
                 path("<int:pk>/", views.resgate_detail, name="resgate_detail"),
                 path("<int:pk>/excluir/", views.resgate_delete, name="resgate_delete"),
+                # ADICIONE ESTA LINHA AQUI
+                path(
+                    "<int:pk>/update_status/",
+                    views.update_resgate_status,
+                    name="update_resgate_status",
+                ),
                 path(
                     "excluir-todos/",
                     views.resgate_delete_all,

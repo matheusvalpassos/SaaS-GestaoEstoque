@@ -1,99 +1,148 @@
 {% load static %}
+{% load widget_tweaks %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produtos - Rede Bellas</title>
+    <title>Gerenciar Produtos - Rede Bellas</title>
+    
+    <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-inter antialiased text-gray-800">
+<body class="bg-gray-100">
+
     {% include 'partials/_navbar.html' %}
 
-    <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-extrabold text-[#DB0020] mb-8 text-center">Lista de Produtos</h1>
+    <main class="container mx-auto px-4 py-10">
+        
+        <!-- Cabeçalho da Página -->
+        <header class="mb-8 fade-in">
+            <h1 class="text-3xl font-extrabold text-gray-800 flex items-center">
+                <i class="fas fa-boxes-stacked text-[#DB0020] mr-4"></i>
+                Gerenciar Produtos
+            </h1>
+            <p class="text-gray-500 mt-1">Adicione, edite e visualize todos os produtos disponíveis para resgate.</p>
+        </header>
 
-    <div class="mb-6 text-right">
-        <a href="{% url 'product_create' %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300">Adicionar Novo Produto</a>
-    </div>
+        <!-- Mensagens do Django -->
+        {% if messages %}
+            <div class="space-y-3 mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg shadow-md flex items-center justify-between fade-in
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500
+                        {% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-times-circle{% else %}fa-info-circle{% endif %} mr-3 text-lg"></i>
+                            <p class="font-medium">{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-    {% if products %}
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">Nome</th>
-                        <th class="py-3 px-6 text-left">Pontos</th>
-                        <th class="py-3 px-6 text-left">Estoque</th>
-                        <th class="py-3 px-6 text-left">Status</th>
-                        <th class="py-3 px-6 text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 text-sm font-light">
+        <!-- Card Principal -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden fade-in" style="animation-delay: 0.2s;">
+            <!-- Cabeçalho do Card com Busca e Ações -->
+            <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
+                <div class="relative w-full md:w-1/3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </span>
+                    <input type="search" id="productSearch" placeholder="Buscar por nome do produto..." class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <a href="{% url 'product_create' %}" class="bg-[#DB0020] hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg shadow-md transition duration-300 transform hover:scale-105 flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Adicionar Novo Produto
+                </a>
+            </div>
+
+            {% if products %}
+                <!-- Layout de Cards para Produtos -->
+                <div id="productListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                     {% for product in products %}
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <span class="font-medium">{{ product.nome }}</span> {# <--- MUDANÇA AQUI (product.nome) #}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center transition-all duration-300 hover:shadow-xl hover:border-indigo-300 product-card">
+                            <div class="flex items-center">
+                                <div class="bg-purple-100 text-purple-600 rounded-full h-10 w-10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-box"></i>
                                 </div>
-                            </td>
-                            <td class="py-3 px-6 text-left">
-                                {{ product.pontos_necessarios }} {# <--- MUDANÇA AQUI (product.pontos_necessarios) #}
-                            </td>
-                            <td class="py-3 px-6 text-left">
-                                {{ product.estoque }} {# <--- MUDANÇA AQUI (product.estoque) #}
-                            </td>
-                            <td class="py-3 px-6 text-left">
-                                {% if product.ativo %} {# <--- MUDANÇA AQUI (product.ativo) #}
-                                    <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                                        <span aria-hidden="true" class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                                        <span class="relative">Ativo</span>
-                                    </span>
-                                {% else %}
-                                    <span class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
-                                        <span aria-hidden="true" class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
-                                        <span class="relative">Inativo</span>
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-6 text-center">
-                                <div class="flex item-center justify-center">
-                                    <a href="#" class="w-4 mr-2 transform hover:text-[#DB0020] hover:scale-110">
-                                        {# Ícone de Olho (Visualizar - sem funcionalidade por enquanto) #}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </a>
-                                    {# Link para a view de edição #}
-                                    <a href="{% url 'product_update' pk=product.pk %}" class="w-4 mr-2 transform hover:text-[#DB0020] hover:scale-110">
-                                        {# Ícone de Lápis (Editar) #}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                    </a>
-                                    {# MUDANÇA AQUI: Link para a view de exclusão #}
-                                    <a href="{% url 'product_delete' pk=product.pk %}" class="w-4 mr-2 transform hover:text-red-500 hover:scale-110">
-                                        {# Ícone de Lixeira (Deletar) #}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                                <p class="text-gray-900 font-semibold product-name">{{ product.nome }}</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <a href="{% url 'product_update' pk=product.pk %}" title="Editar Produto" class="text-gray-400 hover:text-indigo-600 transition duration-300">
+                                    <i class="fas fa-pen-to-square fa-lg"></i>
+                                </a>
+                                <a href="{% url 'product_delete' pk=product.pk %}" title="Excluir Produto" class="text-gray-400 hover:text-red-500 transition duration-300">
+                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="text-center py-20 px-6">
+                    <i class="fas fa-box-open fa-4x text-gray-300 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-700 mb-2">Nenhum Produto Cadastrado</h2>
+                    <p class="text-gray-500 mb-6">Parece que você ainda não adicionou nenhum produto. Que tal começar agora?</p>
+                    <a href="{% url 'product_create' %}" class="bg-[#DB0020] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 transform hover:scale-105 inline-block">
+                        <i class="fas fa-plus mr-2"></i>Adicionar Primeiro Produto
+                    </a>
+                </div>
+            {% endif %}
         </div>
-    {% else %}
-        <p class="text-center text-lg text-gray-600 mt-10">Nenhum produto cadastrado ainda. <a href="#" class="text-[#DB0020] hover:underline">Adicione o primeiro!</a></p>
-    {% endif %}
-</div>
+        
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica de busca na lista de cards
+            const searchInput = document.getElementById('productSearch');
+            const container = document.getElementById('productListContainer');
+            
+            if (searchInput && container) {
+                const cards = container.getElementsByClassName('product-card');
+
+                searchInput.addEventListener('keyup', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    
+                    Array.from(cards).forEach(card => {
+                        const name = card.querySelector('.product-name').textContent.toLowerCase();
+                        
+                        if (name.includes(searchTerm)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

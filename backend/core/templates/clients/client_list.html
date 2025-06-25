@@ -1,108 +1,148 @@
 {% load static %}
+{% load widget_tweaks %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Clientes - Rede Bellas</title>
+    
+    <!-- Tailwind CSS -->
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-inter antialiased text-gray-800">
+<body class="bg-gray-100">
+
     {% include 'partials/_navbar.html' %}
 
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-extrabold text-[#DB0020] mb-8 text-center">Gerenciar Clientes</h1>
+    <main class="container mx-auto px-4 py-10">
+        
+        <!-- Cabeçalho da Página -->
+        <header class="mb-8 fade-in">
+            <h1 class="text-3xl font-extrabold text-gray-800 flex items-center">
+                <i class="fas fa-users text-[#DB0020] mr-4"></i>
+                Gerenciar Clientes
+            </h1>
+            <p class="text-gray-500 mt-1">Adicione, edite e visualize todos os clientes do sistema.</p>
+        </header>
 
+        <!-- Mensagens do Django -->
         {% if messages %}
-            <ul class="messages mb-4">
+            <div class="space-y-3 mb-6">
                 {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }} p-3 rounded mb-2 text-white {% if message.tags == 'success' %}bg-green-500{% elif message.tags == 'error' %}bg-red-500{% elif message.tags == 'warning' %}bg-orange-500{% else %}bg-blue-500{% endif %}"{% endif %}>
-                    {{ message }}
-                </li>
+                    <div class="p-4 rounded-lg shadow-md flex items-center justify-between fade-in
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500
+                        {% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-times-circle{% else %}fa-info-circle{% endif %} mr-3 text-lg"></i>
+                            <p class="font-medium">{{ message }}</p>
+                        </div>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         {% endif %}
 
-        <div class="mb-6 text-right">
-            <a href="{% url 'client_create' %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300">Adicionar Novo Cliente</a>
-        </div>
+        <!-- Card Principal -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden fade-in" style="animation-delay: 0.2s;">
+            <!-- Cabeçalho do Card com Busca e Ações -->
+            <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
+                <div class="relative w-full md:w-1/3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </span>
+                    <input type="search" id="clientSearch" placeholder="Buscar por nome..." class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <a href="{% url 'client_create' %}" class="bg-[#DB0020] hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg shadow-md transition duration-300 transform hover:scale-105 flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Adicionar Novo Cliente
+                </a>
+            </div>
 
-        <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Nome Completo
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            CPF
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Telefone
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Data Nasc.
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Pontos
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Ações
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
+            {% if clients %}
+                <!-- Layout de Cards para Clientes -->
+                <div id="clientListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                     {% for client in clients %}
-                    <tr>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap">{{ client.nome_completo }}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap">{{ client.cpf }}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap">{{ client.telefone }}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap">{{ client.data_nascimento|date:"d/m/Y" }}</p>
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap font-bold">{{ client.pontos }}</p>
-                        </td>
-                        <td class="py-3 px-6 text-center">
-                        <div class="flex item-center justify-center">
-                            {# Link para a view de edição #}
-                            <a href="{% url 'client_update' pk=client.pk %}" class="w-4 mr-2 transform hover:text-[#DB0020] hover:scale-110" title="Editar Cliente">
-                                {# Ícone de Lápis (Editar) #}
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </a>
-                            {# Link para a view de exclusão #}
-                            <a href="{% url 'client_delete' pk=client.pk %}" class="w-4 mr-2 transform hover:text-red-500 hover:scale-110" title="Excluir Cliente">
-                                {# Ícone de Lixeira (Deletar) #}
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </a>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center transition-all duration-300 hover:shadow-xl hover:border-indigo-300 client-card">
+                            <div class="flex items-center">
+                                <div class="bg-indigo-100 text-indigo-600 rounded-full h-10 w-10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <p class="text-gray-900 font-semibold client-name">{{ client.nome_completo }}</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <a href="{% url 'client_update' pk=client.pk %}" title="Editar Cliente" class="text-gray-400 hover:text-indigo-600 transition duration-300">
+                                    <i class="fas fa-pen-to-square fa-lg"></i>
+                                </a>
+                                <a href="{% url 'client_delete' pk=client.pk %}" title="Excluir Cliente" class="text-gray-400 hover:text-red-500 transition duration-300">
+                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                </a>
+                            </div>
                         </div>
-                    </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-600">
-                            Nenhum cliente cadastrado ainda.
-                        </td>
-                    </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="text-center py-20 px-6">
+                    <i class="fas fa-user-friends fa-4x text-gray-300 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-700 mb-2">Nenhum Cliente Cadastrado</h2>
+                    <p class="text-gray-500 mb-6">Parece que você ainda não adicionou nenhum cliente. Que tal começar agora?</p>
+                    <a href="{% url 'client_create' %}" class="bg-[#DB0020] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 transform hover:scale-105 inline-block">
+                        <i class="fas fa-user-plus mr-2"></i>Adicionar Primeiro Cliente
+                    </a>
+                </div>
+            {% endif %}
         </div>
-    </div>
+        
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica de busca na lista de cards
+            const searchInput = document.getElementById('clientSearch');
+            const container = document.getElementById('clientListContainer');
+            
+            if (searchInput && container) {
+                const cards = container.getElementsByClassName('client-card');
+
+                searchInput.addEventListener('keyup', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    
+                    Array.from(cards).forEach(card => {
+                        const name = card.querySelector('.client-name').textContent.toLowerCase();
+                        
+                        if (name.includes(searchTerm)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

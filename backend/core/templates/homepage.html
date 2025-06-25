@@ -4,22 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rede Bellas - Plataforma de Gerenciamento de Resgates</title>
-    
-    <!-- Tailwind CSS (Usando seu arquivo local) -->
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Plataforma de Automação - Rede Bellas</title>
 
-    <!-- Google Fonts -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Favicon -->
+
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logos (8).png' %}">
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -27,17 +23,15 @@
             --secondary-color: #fde047; /* yellow-400 */
         }
 
-        /* Classes para animação com Intersection Observer */
+        /* Animação de entrada suave com JS */
         .reveal {
-            position: relative;
-            transform: translateY(100px);
             opacity: 0;
-            transition: 1s all ease;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-
         .reveal.active {
-            transform: translateY(0);
             opacity: 1;
+            transform: translateY(0);
         }
 
         /* Efeito de brilho sutil no botão principal */
@@ -57,11 +51,24 @@
             transform: scale(2);
             opacity: 0;
         }
+
+        /* Estilos do Carrossel */
+        .carousel-item {
+            transition: opacity 0.7s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .carousel-item img {
+            object-fit: contain; /* Para manter a proporção da imagem */
+            max-height: 500px; /* Altura máxima para o carrossel */
+            max-width: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
 
-    <!-- Navegação -->
     <nav id="navbar" class="py-4 sticky top-0 z-50 transition-all duration-300">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <a href="{% url 'homepage' %}" class="flex items-center space-x-2 transform hover:scale-105 transition duration-300">
@@ -80,33 +87,34 @@
                     </form>
                 {% else %}
                     <a href="{% url 'login' %}" class="text-gray-700 hover:text-[var(--main-color)] font-medium px-4 py-2 rounded-lg transition duration-300">
-                        Entrar
+                        Acessar
                     </a>
                     <a href="{% url 'register' %}" class="bg-[var(--main-color)] hover:bg-red-700 text-white font-semibold py-2 px-5 rounded-lg transition duration-300 shadow-md">
-                        Registrar Gratuitamente
+                        Solicitar Acesso
                     </a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
-    <!-- Seção Herói -->
     <header class="bg-gradient-to-br from-[var(--main-color)] to-red-800 text-white pt-20 pb-28 px-4 text-center overflow-hidden">
         <div class="container mx-auto max-w-4xl">
-            <img src="{% static 'img/logos (10).png' %}" alt="Logo Rede Bellas" class="mx-auto h-28 mb-8 drop-shadow-lg reveal">
+            <div class="reveal">
+                <img src="{% static 'img/logos (10).png' %}" alt="Logo Rede Bellas" class="mx-auto h-28 mb-8 drop-shadow-lg">
+            </div>
             <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-6 reveal" style="transition-delay: 200ms;">
-                Simplifique a Gestão de Seus Resgates
+                Plataforma de Automação de Relatórios Top Clube
             </h1>
             <p class="text-lg md:text-xl mb-10 opacity-90 max-w-2xl mx-auto reveal" style="transition-delay: 400ms;">
-                Gerencie produtos, clientes e o status de cada resgate de forma intuitiva, otimizando seu tempo e garantindo a satisfação.
+                Otimize a gestão de resgates de produtos, o controle de clientes e a geração de relatórios de forma centralizada e eficiente.
             </p>
             <div class="reveal" style="transition-delay: 600ms;">
                 {% if not user.is_authenticated %}
-                    <a href="{% url 'register' %}" class="relative cta-button overflow-hidden bg-[var(--secondary-color)] hover:bg-yellow-500 text-[var(--main-color)] font-bold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition duration-300 inline-block">
-                        <i class="fas fa-rocket mr-2"></i>Comece Grátis Agora!
+                    <a href="{% url 'login' %}" class="relative cta-button overflow-hidden bg-[var(--secondary-color)] hover:bg-yellow-500 text-gray-800 font-bold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition duration-300 inline-block">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Acessar o Sistema
                     </a>
                 {% else %}
-                    <a href="{% url 'dashboard' %}" class="bg-[var(--secondary-color)] hover:bg-yellow-500 text-[var(--main-color)] font-bold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition duration-300 inline-block">
+                    <a href="{% url 'dashboard' %}" class="bg-[var(--secondary-color)] hover:bg-yellow-500 text-gray-800 font-bold py-4 px-8 rounded-full shadow-xl transform hover:scale-105 transition duration-300 inline-block">
                         <i class="fas fa-arrow-right mr-2"></i>Ir para o Dashboard
                     </a>
                 {% endif %}
@@ -114,38 +122,36 @@
         </div>
     </header>
 
-    <!-- Seção de Funcionalidades -->
     <section id="features" class="py-24 px-4 bg-white">
         <div class="container mx-auto max-w-6xl text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2 reveal">Recursos Que Transformam</h2>
-            <p class="text-lg text-gray-600 mb-16 reveal" style="transition-delay: 200ms;">Tudo que você precisa para uma gestão eficiente.</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2 reveal">Ferramentas para Otimizar sua Operação</h2>
+            <p class="text-lg text-gray-600 mb-16 reveal" style="transition-delay: 200ms;">Recursos pensados para a equipe da Rede Bellas.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 <div class="bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group reveal">
-                    <div class="text-[var(--main-color)] text-5xl mb-5 inline-block bg-red-100 p-4 rounded-full"><i class="fas fa-clipboard-list"></i></div>
-                    <h3 class="text-xl font-semibold mb-3">Gestão Simplificada</h3>
-                    <p class="text-gray-600">Acompanhe cada resgate, do produto ao cliente, com um status claro e intuitivo.</p>
+                    <div class="text-[var(--main-color)] text-5xl mb-5 inline-block bg-red-100 p-4 rounded-full"><i class="fas fa-file-import"></i></div>
+                    <h3 class="text-xl font-semibold mb-3">Importação em Lote</h3>
+                    <p class="text-gray-600">Importe centenas de resgates de uma vez, copiando e colando os dados do sistema legado.</p>
                 </div>
                 <div class="bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group reveal" style="transition-delay: 200ms;">
-                    <div class="text-green-600 text-5xl mb-5 inline-block bg-green-100 p-4 rounded-full"><i class="fas fa-receipt"></i></div>
-                    <h3 class="text-xl font-semibold mb-3">Recibos Digitais</h3>
-                    <p class="text-gray-600">Gere recibos detalhados para cada transação, oferecendo transparência total.</p>
+                    <div class="text-green-600 text-5xl mb-5 inline-block bg-green-100 p-4 rounded-full"><i class="fas fa-file-pdf"></i></div>
+                    <h3 class="text-xl font-semibold mb-3">Relatórios Automáticos</h3>
+                    <p class="text-gray-600">Gere relatórios gerais ou manifestos de entrega detalhados em PDF com um único clique.</p>
                 </div>
                 <div class="bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group reveal" style="transition-delay: 400ms;">
-                    <div class="text-purple-600 text-5xl mb-5 inline-block bg-purple-100 p-4 rounded-full"><i class="fas fa-boxes-stacked"></i></div>
-                    <h3 class="text-xl font-semibold mb-3">Controle de Estoque</h3>
-                    <p class="text-gray-600">Monitore o estoque de produtos e gerencie os pontos para cada resgate.</p>
+                    <div class="text-purple-600 text-5xl mb-5 inline-block bg-purple-100 p-4 rounded-full"><i class="fas fa-cogs"></i></div>
+                    <h3 class="text-xl font-semibold mb-3">Controle Centralizado</h3>
+                    <p class="text-gray-600">Gerencie o status de cada resgate (gerado, resgatado, cancelado) em uma única plataforma.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Seção de Exemplo do Dashboard -->
     <section id="dashboard-preview" class="py-24 px-4 bg-gray-100">
         <div class="container mx-auto max-w-6xl text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 reveal">Conheça o Poder do seu Dashboard</h2>
-            <p class="text-lg text-gray-600 mb-12 max-w-3xl mx-auto reveal" style="transition-delay: 200ms;">Tudo o que você precisa em um só lugar. Visualize dados, acompanhe métricas e tome decisões de forma rápida e inteligente.</p>
-            
-            <div class="bg-gray-800 p-2 sm:p-4 rounded-xl shadow-2xl reveal" style="transition-delay: 400ms;">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 reveal">Dashboard de Controle Operacional</h2>
+            <p class="text-lg text-gray-600 mb-12 max-w-3xl mx-auto reveal" style="transition-delay: 200ms;">Acompanhe os indicadores chave da operação do Top Clube em tempo real para tomar decisões mais rápidas e informadas.</p>
+
+            <div id="carousel-container" class="relative bg-gray-800 p-2 sm:p-4 rounded-xl shadow-2xl reveal" style="transition-delay: 400ms;">
                 <div class="flex items-center p-2 bg-gray-700 rounded-t-lg">
                     <div class="flex space-x-2">
                         <div class="w-3 h-3 rounded-full bg-red-500"></div>
@@ -153,58 +159,82 @@
                         <div class="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                 </div>
-                <img src="https://placehold.co/1200x675/f3f4f6/333333?text=Exemplo+Visual+do+Dashboard" alt="Imagem do Dashboard da Rede Bellas" class="rounded-b-lg w-full">
+
+                <div class="relative overflow-hidden h-[500px]">
+                    <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out">
+                        <img src="{% static 'img/meusaas (1).png' %}" alt="Exemplo do Dashboard 1">
+                    </div>
+                    <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0">
+                        <img src="{% static 'img/meusaas (2).png' %}" alt="Exemplo do Dashboard 2">
+                    </div>
+                    <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0">
+                        <img src="{% static 'img/meusaas (3).png' %}" alt="Exemplo do Dashboard 3">
+                    </div>
+                    <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0">
+                        <img src="{% static 'img/meusaas (4).png' %}" alt="Exemplo do Dashboard 4">
+                    </div>
+                    <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0">
+                        <img src="{% static 'img/meusaas (5).png' %}" alt="Exemplo do Dashboard 5">
+                    </div>
+                </div>
+
+                <button id="prevBtn" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white font-bold p-3 rounded-full z-10">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="nextBtn" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white font-bold p-3 rounded-full z-10">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <div id="carousel-indicators" class="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                    <button class="w-3 h-3 rounded-full bg-white"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/50"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/50"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/50"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/50"></button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left mt-16">
                 <div class="reveal" style="transition-delay: 100ms;">
                     <div class="flex items-center mb-3">
                         <i class="fas fa-eye text-3xl text-[var(--main-color)] mr-4"></i>
-                        <h3 class="text-xl font-semibold">Visão Geral</h3>
+                        <h3 class="text-xl font-semibold">Visão Geral Completa</h3>
                     </div>
-                    <p class="text-gray-600">Tenha uma visão completa do seu negócio com cartões de resumo e métricas chave.</p>
+                    <p class="text-gray-600">Acompanhe o panorama geral dos resgates, com indicadores chave e um resumo do status atual.</p>
                 </div>
                 <div class="reveal" style="transition-delay: 300ms;">
                     <div class="flex items-center mb-3">
-                        <i class="fas fa-chart-line text-3xl text-blue-600 mr-4"></i>
-                        <h3 class="text-xl font-semibold">Gráficos Interativos</h3>
+                        <i class="fas fa-chart-bar text-3xl text-blue-600 mr-4"></i>
+                        <h3 class="text-xl font-semibold">Análise de Dados Detalhada</h3>
                     </div>
-                    <p class="text-gray-600">Analise tendências com gráficos de resgates, produtos e pontuações.</p>
+                    <p class="text-gray-600">Visualize gráficos e relatórios que facilitam a análise de tendências e a identificação de oportunidades de melhoria.</p>
                 </div>
                 <div class="reveal" style="transition-delay: 500ms;">
                     <div class="flex items-center mb-3">
-                        <i class="fas fa-bolt text-3xl text-yellow-500 mr-4"></i>
-                        <h3 class="text-xl font-semibold">Ações Rápidas</h3>
+                        <i class="fas fa-tasks text-3xl text-yellow-500 mr-4"></i>
+                        <h3 class="text-xl font-semibold">Gerenciamento Eficiente</h3>
                     </div>
-                    <p class="text-gray-600">Acesse as funções mais importantes diretamente do dashboard.</p>
+                    <p class="text-gray-600">Acesse ferramentas para gerenciar o status dos resgates, gerar relatórios e otimizar o fluxo de trabalho da equipe.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Seção CTA (Call to Action) -->
     <section class="bg-gradient-to-br from-[var(--main-color)] to-red-800 py-20 px-4 text-white text-center">
         <div class="container mx-auto max-w-3xl reveal">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">Pronto para Otimizar Seus Resgates?</h2>
-            <p class="text-lg md:text-xl mb-8 opacity-90">
-                Junte-se à Rede Bellas e leve a gestão de seus produtos e clientes para o próximo nível.
-            </p>
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Maximize a Eficiência Operacional Agora!</h2>
+            <p class="text-lg md:text-xl mb-8 opacity-90">Acesse a plataforma e transforme a gestão de relatórios de resgate do Top Clube.</p>
             {% if not user.is_authenticated %}
-                <a href="{% url 'register' %}" class="bg-yellow-400 hover:bg-yellow-500 text-[var(--main-color)] font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 inline-block">
-                    Comece Grátis Agora!
-                </a>
+                <a href="{% url 'login' %}" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 inline-block">Acessar o Sistema</a>
             {% else %}
-                <a href="{% url 'dashboard' %}" class="bg-yellow-400 hover:bg-yellow-500 text-[var(--main-color)] font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 inline-block">
-                    Ir para o Dashboard
-                </a>
+                <a href="{% url 'dashboard' %}" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 inline-block">Ir para o Dashboard</a>
             {% endif %}
         </div>
     </section>
 
-    <!-- Rodapé -->
     <footer class="bg-gray-800 text-white py-12 px-4">
         <div class="container mx-auto text-center">
-            <p class="text-sm text-gray-400">&copy; {% now "Y" %} Rede Bellas. Todos os direitos reservados.</p>
+            <p class="text-sm text-gray-400">&copy; {% now "Y" %} Rede Bellas. Ferramenta de uso interno.</p>
             <div class="flex justify-center space-x-6 mt-6">
                 <a href="#" class="text-gray-400 hover:text-white transition duration-300 text-xl"><i class="fab fa-facebook"></i></a>
                 <a href="#" class="text-gray-400 hover:text-white transition duration-300 text-xl"><i class="fab fa-instagram"></i></a>
@@ -217,27 +247,66 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Efeito da Navbar ao rolar
             const navbar = document.getElementById('navbar');
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) {
-                    navbar.classList.add('bg-white', 'shadow-lg');
-                } else {
-                    navbar.classList.remove('bg-white', 'shadow-lg');
-                }
-            });
+            if(navbar) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) {
+                        navbar.classList.add('bg-white', 'shadow-lg');
+                    } else {
+                        navbar.classList.remove('bg-white', 'shadow-lg');
+                    }
+                });
+            }
 
             // Animação de revelação de elementos ao rolar
             const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
+                entries.forEach((entry, index) => {
                     if (entry.isIntersecting) {
+                        const delay = entry.target.style.transitionDelay || (index * 100) + 'ms';
+                        entry.target.style.transitionDelay = delay;
                         entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
                     }
                 });
-            }, {
-                threshold: 0.1 // Ativa quando 10% do elemento está visível
-            });
+            }, { threshold: 0.1 });
 
-            const revealElements = document.querySelectorAll('.reveal');
-            revealElements.forEach((el) => observer.observe(el));
+            document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+            // Lógica do Carrossel
+            const carouselContainer = document.getElementById('carousel-container');
+            if (carouselContainer) {
+                const slides = carouselContainer.querySelectorAll('.carousel-item');
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                const indicators = document.getElementById('carousel-indicators').querySelectorAll('button');
+                let currentIndex = 0;
+
+                function showSlide(index) {
+                    slides.forEach((slide, i) => {
+                        slide.classList.toggle('opacity-0', i !== index);
+                    });
+                    indicators.forEach((indicator, i) => {
+                        indicator.classList.toggle('bg-white', i === index);
+                        indicator.classList.toggle('bg-white/50', i !== index);
+                    });
+                    currentIndex = index;
+                }
+
+                prevBtn.addEventListener('click', () => {
+                    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    showSlide(newIndex);
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    const newIndex = (currentIndex + 1) % slides.length;
+                    showSlide(newIndex);
+                });
+
+                indicators.forEach((indicator, index) => {
+                    indicator.addEventListener('click', () => {
+                        showSlide(index);
+                    });
+                });
+            }
         });
     </script>
 </body>
