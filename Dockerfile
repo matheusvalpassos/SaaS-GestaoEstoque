@@ -1,6 +1,7 @@
 # Usa uma imagem base Python com a versão específica (3.13) para garantir compatibilidade.
 # Esta versão é compatível com Django 5.x e audioop-lts.
-FROM python:3.13-slim-buster 
+# CORRIGIDO: Usando a tag '3.13-slim' que é mais comum e existente.
+FROM python:3.13-slim 
 
 # Definir variáveis de ambiente essenciais para o Python e o Django.
 ENV PYTHONUNBUFFERED 1
