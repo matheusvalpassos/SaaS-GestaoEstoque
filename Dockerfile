@@ -1,6 +1,6 @@
-# Usa uma imagem base Python com a versão específica (3.10) para garantir consistência.
-# Esta versão é compatível com o Django 5.x.
-FROM python:3.10-slim-buster 
+# Usa uma imagem base Python com a versão específica (3.13) para garantir compatibilidade.
+# Esta versão é compatível com Django 5.x e audioop-lts.
+FROM python:3.13-slim-buster 
 
 # Definir variáveis de ambiente essenciais para o Python e o Django.
 ENV PYTHONUNBUFFERED 1
@@ -32,11 +32,6 @@ RUN python manage.py collectstatic --noinput
 
 # Definir o comando que será executado quando o contentor iniciar.
 # O Railway injeta $PORT automaticamente.
-# CORRIGIDO: Ativar o ambiente Python antes de executar o Gunicorn.
-# O Python na imagem slim-buster instala pacotes globalmente ou num ambiente padrão.
-# A forma mais segura é chamar diretamente o executável gunicorn que o pip instalou,
-# que estará em /usr/local/bin ou similar, ou confiar que 'python -m gunicorn' funciona.
-# Se o 'python -m gunicorn' ainda falha, a última tentativa é chamar o executável diretamente
-# ou garantir que o PATH está correto.
-# Vamos tentar o comando completo no shell:
-CMD ["sh", "-c", "/usr/local/bin/python -m gunicorn --bind 0.0.0.0:$PORT config.wsgi:application"]
+# NOVO: Define PYTHONPATH para incluir o diretório de site-packages e a raiz do projeto.
+# Isso garante que o Python pode encontrar tanto o 'gunicorn' quanto o 'config.wsgi'.
+CMD ["sh", "-c", "export PYTHONPATH=/usr/local/lib/python3.13/site-packages:/app:$PYTHONPATH && /usr/local/bin/python -m gunicorn --bind 0.0.0.0:$PORT config.wsgi:application"]
