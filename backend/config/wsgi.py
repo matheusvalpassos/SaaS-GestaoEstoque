@@ -1,14 +1,11 @@
 # backend/config/wsgi.py
 import os
-import sys  # NOVO: Importar sys para manipulação de caminho
-
 from django.core.wsgi import get_wsgi_application
 
-# Adicionar o diretório raiz do projeto Django (pasta 'backend') ao sys.path
-# '/opt/render/project/src' é o caminho absoluto onde o Render copia o seu rootDir (backend)
-# Isso garante que Python pode encontrar 'config' e 'core'
-sys.path.insert(0, "/opt/render/project/src")
-
+# Define o módulo de configurações do Django.
+# Isso é essencial para que o Django saiba onde encontrar as suas configurações.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
+# Obtém a aplicação WSGI do Django.
+# Esta 'application' é o que o Gunicorn irá executar.
 application = get_wsgi_application()
