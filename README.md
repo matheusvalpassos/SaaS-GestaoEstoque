@@ -25,24 +25,24 @@ O sistema permite:
 ## 🖥️ Telas do Sistema em Ação
 
 #### Dashboard Principal
-![Tela do Dashboard Principal](img/meusaas%20(1).png)
+![Tela do Dashboard Principal](backend/static_dev/img/meusaas%20(1).png)
 *Visão geral com estatísticas, gráficos e listas dos itens mais relevantes.*
 
-#### Gestão de Resgates
-![Tela de Gestão de Resgates](img/meusaas%20(2).png)
-*Interface para filtrar, visualizar e gerenciar todos os resgates.*
+#### Relatórios Gerados
+![Tela de Relatórios Gerados](backend/static_dev/img/meusaas%20(2).png)
+*Visualize e gerencie todos os relatórios gerados no sistema.*
 
-#### Detalhes e Atualização de Status
-![Tela de Detalhes do Resgate](img/meusaas%20(3).png)
-*Página de detalhes com um formulário dedicado para alterar o status de um resgate.*
+#### Lista de Resgates
+![Tela da Lista de Resgates](backend/static_dev/img/meusaas%20(3).png)
+*Filtre, visualize, exporte e gerencie todos os resgates do sistema.*
 
-#### Importação em Lote
-![Tela de Importação em Lote](img/meusaas%20(4).png)
-*Ferramenta para colar e processar dados brutos, automatizando a criação de registros.*
+#### Gerenciar Clientes
+![Tela de Gerenciar Clientes](backend/static_dev/img/meusaas%20(4).png)
+*Adicione, edite e visualize todos os clientes do sistema.*
 
-#### Relatório em PDF
-![Exemplo de Relatório em PDF](img/meusaas%20(5).png)
-*Exemplo do layout profissional dos relatórios gerados em PDF.*
+#### Gerenciar Produtos
+![Tela de Gerenciar Produtos](backend/static_dev/img/meusaas%20(5).png)
+*Adicione, edite e visualize todos os produtos disponíveis para resgate.*
 
 ---
 
