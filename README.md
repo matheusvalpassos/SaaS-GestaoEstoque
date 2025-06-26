@@ -24,6 +24,18 @@ O sistema permite:
 
 ## 🖥️ Telas do Sistema em Ação
 
+#### Homepage
+![Tela da Homepage](backend/static_dev/img/meusaas%20(6).png)
+*Página inicial de apresentação da plataforma.*
+
+#### Página de Login
+![Tela de Login](backend/static_dev/img/meusaas%20(7).png)
+*Formulário de acesso para usuários autenticados.*
+
+#### Página de Registro
+![Tela de Registro](backend/static_dev/img/meusaas%20(8).png)
+*Formulário para criação de novas contas de acesso.*
+
 #### Dashboard Principal
 ![Tela do Dashboard Principal](backend/static_dev/img/meusaas%20(1).png)
 *Visão geral com estatísticas, gráficos e listas dos itens mais relevantes.*
@@ -43,6 +55,7 @@ O sistema permite:
 #### Gerenciar Produtos
 ![Tela de Gerenciar Produtos](backend/static_dev/img/meusaas%20(5).png)
 *Adicione, edite e visualize todos os produtos disponíveis para resgate.*
+
 
 ---
 
