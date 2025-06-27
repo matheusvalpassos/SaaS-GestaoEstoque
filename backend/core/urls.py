@@ -43,6 +43,11 @@ urlpatterns = [
                     name="update_resgate_status",
                 ),
                 path(
+                    "excluir-selecionados/",
+                    views.resgate_delete_selected,
+                    name="resgate_delete_selected",
+                ),
+                path(
                     "excluir-todos/",
                     views.resgate_delete_all,
                     name="resgate_delete_all",
@@ -74,6 +79,11 @@ urlpatterns = [
                     "<int:pk>/delete/",
                     views.report_delete_single,
                     name="report_delete_single",
+                ),
+                path(
+                    "<int:pk>/visualizar/",
+                    views.regenerate_report_pdf,
+                    name="regenerate_report_pdf",
                 ),
             ]
         ),

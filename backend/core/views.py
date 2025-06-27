@@ -37,12 +37,15 @@ def dashboard_view(request):
     Exibe o dashboard principal com informações resumidas e estatísticas.
     """
     total_products = Produto.objects.count()
-    pending_resgates = Resgate.objects.filter(status="GERADO").count()
+
+    # CORREÇÃO APLICADA AQUI: Usando __iexact para busca case-insensitive
+    pending_resgates = Resgate.objects.filter(status__iexact="gerado").count()
+    completed_resgates = Resgate.objects.filter(status__iexact="resgatado").count()
+
     active_clients = Cliente.objects.count()
-    completed_resgates = Resgate.objects.filter(status="RESGATADO").count()
-    total_points_redeemed_agg = Resgate.objects.filter(status="RESGATADO").aggregate(
-        Sum("pontos_totais_resgatados")
-    )
+    total_points_redeemed_agg = Resgate.objects.filter(
+        status__iexact="resgatado"
+    ).aggregate(Sum("pontos_totais_resgatados"))
     total_points_redeemed = (
         total_points_redeemed_agg["pontos_totais_resgatados__sum"] or 0
     )
@@ -61,7 +64,9 @@ def dashboard_view(request):
     )
 
     resgates_por_status = Resgate.objects.values("status").annotate(count=Count("id"))
-    status_labels_list = [entry["status"] for entry in resgates_por_status]
+    status_labels_list = [
+        entry["status"].capitalize() for entry in resgates_por_status
+    ]  # Deixa os labels mais bonitos
     status_counts_list = [entry["count"] for entry in resgates_por_status]
 
     resgates_por_posto = (
@@ -253,15 +258,159 @@ def resgate_list(request):
 
 @login_required
 def resgate_upload_parse(request):
+    """
+    Processa um bloco de texto bruto, extrai múltiplos resgates e os importa
+    para o banco de dados. Cria automaticamente produtos, clientes ou postos
+    se não existirem.
+    """
     if request.method == "POST":
         form = ResgateParseForm(request.POST)
         if form.is_valid():
             raw_data = form.cleaned_data["raw_data"]
-            # ... (Lógica de parse) ...
+
+            # --- Etapa de Limpeza dos Dados ---
+            # Remove cabeçalhos, rodapés e linhas em branco indesejadas do texto copiado
+            clean_data = re.sub(r"^\d+\/\d+\s*$", "", raw_data, flags=re.MULTILINE)
+            clean_data = re.sub(
+                r"^Produto \/ Cliente.*Situação\*?\s*$",
+                "",
+                clean_data,
+                flags=re.MULTILINE,
+            )
+            clean_data = re.sub(
+                r"^\*?Total resgatado.*pontos.*$", "", clean_data, flags=re.MULTILINE
+            )
+            clean_data = re.sub(
+                r"\t+", " ", clean_data
+            )  # Converte tabs múltiplos em espaço
+            clean_data = re.sub(
+                r"^\s*\n", "", clean_data, flags=re.MULTILINE
+            ).strip()  # Remove linhas vazias
+
+            # --- Etapa de Parse com Regex ---
+            # Expressão regular para capturar cada bloco de resgate
+            block_pattern = re.compile(
+                r"(?P<produto_full>.+?)\s*\[(?P<pontos_prod>\d+)\s*pontos\]\s*\n"
+                r"(?P<cliente_nome>.+?)\s+POSTO\s*(?P<posto_nome>.+?)\s*\n"
+                r"(?P<tipo_resgate>.+?)\s+"
+                r"(?P<data_geracao_data>\d{2}\/\d{2}\/\d{4})\s*\n"
+                r"(?P<data_geracao_hora>\d{2}:\d{2})\s+"
+                r"(?P<data_vencimento_data>\d{2}\/\d{2}\/\d{4})\s*\n"
+                r"(?P<data_vencimento_hora>\d{2}:\d{2})\s+"
+                r"(?P<quantidade>\d+)\s*"
+                r"(?P<situacao>(?:Gerado|Resgatado|Vencido|Cancelado|Em Análise)?)\s*$",
+                re.MULTILINE | re.DOTALL,
+            )
+
+            matches = list(block_pattern.finditer(clean_data))
+            num_parsed = 0
+            num_errors = 0
+
+            if not matches:
+                messages.error(
+                    request,
+                    "Nenhum resgate válido encontrado no texto. Verifique o formato dos dados copiados.",
+                )
+                return redirect("resgate_upload_parse")
+
+            # --- Etapa de Processamento e Criação no Banco ---
+            for match in matches:
+                data = match.groupdict()
+                try:
+                    # Converte datas e números
+                    gerado_em_str = (
+                        f"{data['data_geracao_data']} {data['data_geracao_hora']}"
+                    )
+                    gerado_em_aware = timezone.make_aware(
+                        datetime.strptime(gerado_em_str, "%d/%m/%Y %H:%M")
+                    )
+                    vencimento_str = (
+                        f"{data['data_vencimento_data']} {data['data_vencimento_hora']}"
+                    )
+                    vencimento_aware = timezone.make_aware(
+                        datetime.strptime(vencimento_str, "%d/%m/%Y %H:%M")
+                    )
+                    quantidade = int(data["quantidade"])
+                    pontos_prod = int(data["pontos_prod"])
+
+                    # Cria ou busca o Produto
+                    produto, created = Produto.objects.get_or_create(
+                        nome__iexact=data["produto_full"].strip(),
+                        defaults={
+                            "nome": data["produto_full"].strip(),
+                            "pontos_necessarios": (
+                                pontos_prod / quantidade if quantidade > 0 else 0
+                            ),
+                        },
+                    )
+                    if created:
+                        messages.warning(
+                            request,
+                            f"Produto '{produto.nome}' criado automaticamente. Revise os detalhes!",
+                        )
+
+                    # Cria ou busca o Cliente
+                    cliente, created = Cliente.objects.get_or_create(
+                        nome_completo__iexact=data["cliente_nome"].strip(),
+                        defaults={"nome_completo": data["cliente_nome"].strip()},
+                    )
+                    if created:
+                        messages.warning(
+                            request,
+                            f"Cliente '{cliente.nome_completo}' criado automaticamente. Revise os detalhes!",
+                        )
+
+                    # Cria ou busca o Posto
+                    posto, created = Posto.objects.get_or_create(
+                        nome__iexact=data["posto_nome"].strip(),
+                        defaults={"nome": data["posto_nome"].strip()},
+                    )
+                    if created:
+                        messages.warning(
+                            request,
+                            f"Posto '{posto.nome}' criado automaticamente. Revise os detalhes!",
+                        )
+
+                    # Cria o objeto Resgate
+                    Resgate.objects.create(
+                        produto=produto,
+                        cliente=cliente,
+                        posto_resgate=posto,
+                        tipo_resgate=data["tipo_resgate"].strip(),
+                        gerado_em=gerado_em_aware,
+                        vencimento=vencimento_aware,
+                        quantidade=quantidade,
+                        status=(
+                            data["situacao"].strip().upper()
+                            if data["situacao"]
+                            else "GERADO"
+                        ),
+                    )
+                    num_parsed += 1
+
+                except Exception as e:
+                    num_errors += 1
+                    messages.error(
+                        request,
+                        f"Erro ao processar um item: {e}. Detalhes: {match.group(0)[:100]}...",
+                    )
+
+            if num_parsed > 0:
+                messages.success(
+                    request, f"{num_parsed} resgates importados com sucesso!"
+                )
+            if num_errors > 0:
+                messages.error(
+                    request,
+                    f"Falha ao importar {num_errors} resgates. Verifique os erros detalhados.",
+                )
+
             return redirect("resgate_list")
     else:
         form = ResgateParseForm()
-    return render(request, "resgates/resgate_upload_parse.html", {"form": form})
+
+    context = {"title": "Importar Resgates", "form": form}
+    return render(request, "resgates/resgate_upload_parse.html", context)
 
 
 @login_required
@@ -283,6 +432,37 @@ def resgate_delete_all(request):
         Resgate.objects.all().delete()
         messages.success(request, "Todos os resgates foram excluídos com sucesso!")
         return redirect("resgate_list")
+    return redirect("resgate_list")
+
+
+@login_required
+def resgate_delete_selected(request):
+    """
+    Exclui múltiplos resgates com base nos IDs selecionados enviados via POST.
+    """
+    if request.method == "POST":
+        # Pega a lista de IDs dos checkboxes marcados
+        resgate_ids = request.POST.getlist("resgate_ids")
+
+        if not resgate_ids:
+            messages.warning(request, "Nenhum resgate foi selecionado para exclusão.")
+            return redirect("resgate_list")
+
+        try:
+            # Filtra os resgates pelos IDs e os deleta
+            resgates_to_delete = Resgate.objects.filter(id__in=resgate_ids)
+            count = resgates_to_delete.count()
+            resgates_to_delete.delete()
+
+            messages.success(
+                request,
+                f"{count} resgate(s) selecionado(s) foram excluídos com sucesso!",
+            )
+        except Exception as e:
+            messages.error(
+                request, f"Ocorreu um erro ao tentar excluir os resgates: {e}"
+            )
+
     return redirect("resgate_list")
 
 
@@ -322,13 +502,64 @@ def resgate_detail(request, pk):
 
 @login_required
 def resgate_validate_tracking(request):
-    resgate = None
+    """
+    Processa a validação de um resgate em duas etapas:
+    1. Busca (GET): Procura por um código e exibe os detalhes para conferência.
+    2. Confirmação (POST): Efetivamente valida o resgate e altera seu status.
+    """
+    resgate_encontrado = None
+    codigo_buscado = request.GET.get("codigo_rastreamento", "").strip()
+
+    # --- ETAPA 1: BUSCA (Quando a página é carregada ou um código é buscado) ---
+    if codigo_buscado:
+        try:
+            resgate_encontrado = Resgate.objects.get(
+                codigo_rastreamento__iexact=codigo_buscado
+            )
+            messages.info(
+                request,
+                "Resgate encontrado. Por favor, confira os dados e confirme a entrega.",
+            )
+        except Resgate.DoesNotExist:
+            messages.error(
+                request,
+                f"Código de rastreamento '{codigo_buscado}' não encontrado no sistema.",
+            )
+            resgate_encontrado = None  # Garante que nada seja exibido se não encontrado
+
+    # --- ETAPA 2: CONFIRMAÇÃO (Quando o formulário de validação é enviado) ---
     if request.method == "POST":
-        codigo_rastreamento = request.POST.get("codigo_rastreamento", "").strip()
-        # ... (Lógica de validação) ...
+        resgate_id = request.POST.get("resgate_id")
+        resgate = get_object_or_404(Resgate, id=resgate_id)
+
+        # Pega os nomes do formulário de confirmação
+        nome_recebedor = request.POST.get("nome_recebedor", "").strip()
+        nome_motorista = request.POST.get("nome_motorista", "").strip()
+
+        # Valida o status antes de alterar
+        if resgate.status == "GERADO":
+            resgate.status = "RESGATADO"
+            resgate.nome_recebedor = nome_recebedor if nome_recebedor else None
+            resgate.nome_motorista = nome_motorista if nome_motorista else None
+            resgate.save()
+            messages.success(
+                request, f"Resgate de '{resgate.produto.nome}' validado com sucesso!"
+            )
+        else:
+            messages.warning(
+                request,
+                f"Este resgate já possui o status '{resgate.get_status_display()}' e não pode ser alterado aqui.",
+            )
+
+        # Redireciona para a mesma página, que agora mostrará a mensagem de sucesso
+        return redirect(
+            f"{request.path}?codigo_rastreamento={resgate.codigo_rastreamento}"
+        )
+
     context = {
         "title": "Validar Resgate por Código",
-        "resgate_encontrado": resgate,
+        "resgate_encontrado": resgate_encontrado,
+        "codigo_buscado": codigo_buscado,
     }
     return render(request, "resgates/resgate_validate_tracking.html", context)
 
@@ -371,6 +602,67 @@ def report_delete_single(request, pk):
             request, f"Relatório '{report.report_id}' excluído com sucesso!"
         )
     return redirect("report_list")
+
+
+@login_required
+def regenerate_report_pdf(request, pk):
+    """
+    Busca um relatório já gerado pelo seu ID e recria o PDF
+    com base nos filtros que foram salvos.
+    """
+    report = get_object_or_404(RelatorioGerado, pk=pk)
+    filters = report.filtros_aplicados
+
+    # Recria a queryset de resgates com base nos filtros salvos
+    resgates = Resgate.objects.all().order_by("-gerado_em")
+
+    if filters.get("posto") and filters["posto"] != "Todos":
+        resgates = resgates.filter(posto_resgate__nome=filters["posto"])
+    if filters.get("produto") and filters["produto"] != "Todos":
+        resgates = resgates.filter(produto__nome=filters["produto"])
+    if (
+        filters.get("data_geracao_inicio")
+        and filters["data_geracao_inicio"] != "Qualquer"
+    ):
+        try:
+            start_date = datetime.strptime(
+                filters["data_geracao_inicio"], "%d/%m/%Y %H:%M"
+            )
+            resgates = resgates.filter(gerado_em__gte=timezone.make_aware(start_date))
+        except (ValueError, TypeError):
+            pass
+    if filters.get("data_geracao_fim") and filters["data_geracao_fim"] != "Qualquer":
+        try:
+            end_date = datetime.strptime(filters["data_geracao_fim"], "%d/%m/%Y %H:%M")
+            resgates = resgates.filter(gerado_em__lte=timezone.make_aware(end_date))
+        except (ValueError, TypeError):
+            pass
+
+    # Lida com o caso de ser um manifesto de lote
+    is_manifesto_lote = report.tipo == "MANIFESTO_LOTE"
+    if is_manifesto_lote and report.codigo_rastreamento_lote:
+        resgates = Resgate.objects.filter(
+            codigo_rastreamento=report.codigo_rastreamento_lote
+        ).order_by("id")
+
+    # Prepara o contexto para renderizar o template do PDF
+    context_pdf = {
+        "resgates": resgates,
+        "current_generation_time": report.data_geracao,
+        "report_id": report.report_id,
+        "is_manifesto_lote": is_manifesto_lote,
+        # ... (adicione outras variáveis de contexto que seu template de PDF precisa)
+    }
+
+    html_string = render_to_string("resgates/relatorio_resgates_pdf.html", context_pdf)
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="relatorio_{report.report_id}.pdf"'
+    )
+    return response
 
 
 # --- NOVA VIEW ---
