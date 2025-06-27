@@ -88,7 +88,11 @@
                         </div>
                         <div class="lg:col-span-2 flex items-end space-x-3">
                             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center"><i class="fas fa-search mr-2"></i>Filtrar</button>
-                            <a href="{% url 'resgate_list' %}?format=pdf{% if request.GET.posto %}&posto={{ request.GET.posto }}{% endif %}{% if request.GET.produto %}&produto={{ request.GET.produto }}{% endif %}{% if request.GET.data_geracao_inicio %}&data_geracao_inicio={{ request.GET.data_geracao_inicio }}{% endif %}{% if request.GET.data_geracao_fim %}&data_geracao_fim={{ request.GET.data_geracao_fim }}{% endif %}{% if request.GET.codigo_rastreamento %}&codigo_rastreamento={{ request.GET.codigo_rastreamento }}{% endif %}" target="_blank" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center"><i class="fas fa-file-pdf mr-2"></i>Gerar PDF</a>
+                            <a href="?{{ request.GET.urlencode }}&format=pdf" 
+                            target="_blank" 
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-file-pdf mr-2"></i>Gerar PDF
+                            </a>
                         </div>
                     </div>
                 </form>

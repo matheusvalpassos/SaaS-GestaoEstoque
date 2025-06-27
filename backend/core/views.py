@@ -226,30 +226,101 @@ def client_delete(request, pk):
 
 @login_required
 def resgate_list(request):
-    resgates = Resgate.objects.all().order_by("-gerado_em")
-    filter_form = ResgateFilterForm(request.GET)
+    """
+    Exibe a lista de resgates, com funcionalidade de filtro e exportação de relatório PDF.
+    A lógica foi refatorada para garantir que os filtros sejam aplicados antes da decisão de gerar PDF.
+    """
+    # Inicia a queryset base
+    resgates_query = (
+        Resgate.objects.all()
+        .select_related("produto", "cliente", "posto_resgate")
+        .order_by("-gerado_em")
+    )
+    filter_form = ResgateFilterForm(request.GET or None)
+
+    # Aplica os filtros se o formulário for válido
     if filter_form.is_valid():
         if filter_form.cleaned_data.get("posto"):
-            resgates = resgates.filter(posto_resgate=filter_form.cleaned_data["posto"])
+            resgates_query = resgates_query.filter(
+                posto_resgate=filter_form.cleaned_data["posto"]
+            )
         if filter_form.cleaned_data.get("produto"):
-            resgates = resgates.filter(produto=filter_form.cleaned_data["produto"])
+            resgates_query = resgates_query.filter(
+                produto=filter_form.cleaned_data["produto"]
+            )
         if filter_form.cleaned_data.get("data_geracao_inicio"):
-            resgates = resgates.filter(
+            resgates_query = resgates_query.filter(
                 gerado_em__gte=filter_form.cleaned_data["data_geracao_inicio"]
             )
         if filter_form.cleaned_data.get("data_geracao_fim"):
-            resgates = resgates.filter(
+            resgates_query = resgates_query.filter(
                 gerado_em__lte=filter_form.cleaned_data["data_geracao_fim"]
             )
         if filter_form.cleaned_data.get("codigo_rastreamento"):
-            resgates = resgates.filter(
+            resgates_query = resgates_query.filter(
                 codigo_rastreamento__icontains=filter_form.cleaned_data[
                     "codigo_rastreamento"
                 ]
             )
 
+    # Verifica se a requisição é para gerar um PDF
+    if "format" in request.GET and request.GET["format"] == "pdf":
+        current_generation_time = timezone.now()
+        report_id = str(uuid.uuid4())[:8].upper()
+
+        # Prepara o contexto para o PDF usando a queryset JÁ FILTRADA
+        context_pdf = {
+            "resgates": resgates_query,
+            "current_generation_time": current_generation_time,
+            "report_id": report_id,
+            "posto_nome": (
+                filter_form.cleaned_data.get("posto").nome
+                if filter_form.cleaned_data.get("posto")
+                else "Todos"
+            ),
+            "produto_nome": (
+                filter_form.cleaned_data.get("produto").nome
+                if filter_form.cleaned_data.get("produto")
+                else "Todos"
+            ),
+            "data_geracao_inicio_pdf": filter_form.cleaned_data.get(
+                "data_geracao_inicio"
+            ),
+            "data_geracao_fim_pdf": filter_form.cleaned_data.get("data_geracao_fim"),
+        }
+
+        # Salva o registro do relatório gerado
+        try:
+            filtros_para_salvar = {
+                k: v.strftime("%d/%m/%Y %H:%M") if isinstance(v, datetime) else str(v)
+                for k, v in filter_form.cleaned_data.items()
+                if v
+            }
+            RelatorioGerado.objects.create(
+                report_id=report_id,
+                tipo="GERAL",
+                data_geracao=current_generation_time,
+                filtros_aplicados=filtros_para_salvar,
+            )
+        except Exception as e:
+            messages.error(request, f"Erro ao registrar o relatório PDF: {e}")
+
+        # Renderiza o PDF
+        html_string = render_to_string(
+            "resgates/relatorio_resgates_pdf.html", context_pdf
+        )
+        html = HTML(string=html_string, base_url=request.build_absolute_uri())
+        pdf_file = html.write_pdf()
+
+        response = HttpResponse(pdf_file, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'inline; filename="relatorio_geral_{report_id}.pdf"'
+        )
+        return response
+
+    # Se não for para gerar PDF, renderiza a página HTML normal com os resgates filtrados
     context = {
-        "resgates": resgates,
+        "resgates": resgates_query,
         "filter_form": filter_form,
         "title": "Lista de Resgates",
     }
