@@ -18,3 +18,5 @@ python manage.py collectstatic --no-input
 
 echo "Aplicando migrações do banco de dados..."
 python manage.py migrate
+echo "Iniciando o servidor Django..."
+python manage.py runserver
