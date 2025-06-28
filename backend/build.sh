@@ -2,11 +2,24 @@
 # Exit on error
 set -o errexit
 
-# 1. Instala as dependências (o requirements.txt está nesta pasta)
+# --- ETAPA 1: BUILD DO FRONTEND ---
+echo "Compilando o Tailwind CSS..."
+# Navega até a pasta do frontend
+cd ../frontend 
+# Instala as dependências do Node.js (Tailwind)
+npm install
+# Roda o script de build para gerar o arquivo output.css
+npm run build
+# Volta para a pasta do backend para continuar
+cd ../backend
+
+# --- ETAPA 2: BUILD DO BACKEND ---
+echo "Instalando dependências do Python..."
 pip install -r requirements.txt
 
-# 2. Coleta os arquivos estáticos
+echo "Coletando arquivos estáticos..."
+# O Django coleta TODOS os arquivos estáticos, incluindo o output.css
 python manage.py collectstatic --no-input
 
-# 3. Roda as migrações do banco de dados
+echo "Aplicando migrações do banco de dados..."
 python manage.py migrate
