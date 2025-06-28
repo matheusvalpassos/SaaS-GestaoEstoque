@@ -4,16 +4,13 @@ import dj_database_url
 from pathlib import Path
 from decouple import config, Csv
 
-# Use pathlib, que é mais moderno e seguro para caminhos de arquivo.
-# BASE_DIR agora aponta para a pasta 'backend'.
+# Caminho base para o projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Carrega as variáveis de ambiente usando decouple.
+# Carrega as variáveis de ambiente da Render
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = config(
-    "DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv()
-)
+ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", cast=Csv())
 
 # Application definition
 INSTALLED_APPS = [
@@ -22,18 +19,15 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    # Whitenoise deve vir logo após messages
-    "whitenoise.runserver_nostatic",
+    "whitenoise.runserver_nostatic",  # WhiteNoise para servir estáticos
     "django.contrib.staticfiles",
-    # Suas Apps
     "core",
     "widget_tweaks",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise para servir ficheiros estáticos de forma eficiente em produção
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Posição correta
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -48,7 +42,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "core" / "templates"],  # Sintaxe mais limpa com pathlib
+        "DIRS": [BASE_DIR / "core" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -64,10 +58,7 @@ TEMPLATES = [
 # Configuração do Banco de Dados para Produção (Supabase)
 DATABASES = {
     "default": dj_database_url.config(
-        # Usa a variável de ambiente DATABASE_URL que você configurou na Render
-        default=config("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,  # Essencial para o Supabase
+        default=config("DATABASE_URL"), conn_max_age=600, ssl_require=True
     )
 }
 
@@ -87,15 +78,14 @@ TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Configurações de Arquivos Estáticos para Produção
 STATIC_URL = "/static/"
-# Pasta para onde o collectstatic irá copiar os arquivos para produção
 STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static_dev",
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-# Default primary key field type
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Autenticação
