@@ -61,7 +61,7 @@ TEMPLATES = [
     },
 ]
 
-# Configuração do Banco de Dados usando decouple para fornecer a URL
+# Configuração do Banco de Dados para Produção (Supabase)
 DATABASES = {
     "default": dj_database_url.config(
         # Usa a variável de ambiente DATABASE_URL que você configurou na Render

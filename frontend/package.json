@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "node node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ../backend/static_dev/css/output.css --minify"
+    "build": "npx tailwindcss -c ./tailwind.config.js -i ./src/input.css -o ../backend/static_dev/css/output.css --minify"
   },
   "keywords": [],
   "author": "",
