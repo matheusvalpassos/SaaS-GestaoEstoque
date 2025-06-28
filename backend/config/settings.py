@@ -63,10 +63,12 @@ TEMPLATES = [
 
 # Configuração do Banco de Dados usando decouple para fornecer a URL
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        # Usa a variável de ambiente DATABASE_URL que você configurou na Render
+        default=config("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True,  # Essencial para o Supabase
+    )
 }
 
 # Password validation
@@ -93,7 +95,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static_dev",
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
