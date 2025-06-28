@@ -8,6 +8,8 @@ echo "Compilando o Tailwind CSS..."
 cd ../frontend 
 # Instala as dependências do Node.js (Tailwind)
 npm install
+# NOVO: Força a recompilação de pacotes
+npm rebuild
 # Roda o script de build para gerar o arquivo output.css
 npm run build
 # Volta para a pasta do backend para continuar
@@ -23,3 +25,4 @@ python manage.py collectstatic --no-input
 
 echo "Aplicando migrações do banco de dados..."
 python manage.py migrate
+echo "Iniciando o servidor de desenvolvimento..."
