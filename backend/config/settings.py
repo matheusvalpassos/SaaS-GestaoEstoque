@@ -4,22 +4,19 @@ import dj_database_url
 from pathlib import Path
 from decouple import config, Csv
 
-# Caminho base para o projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Carrega as variáveis de ambiente da Render
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", cast=Csv())
 
-# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "whitenoise.runserver_nostatic",  # WhiteNoise para servir estáticos
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "core",
     "widget_tweaks",
@@ -27,7 +24,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Posição correta
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,6 +75,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Configurações de Arquivos Estáticos para Produção
+# Configurações de Arquivos Estáticos
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 STATICFILES_DIRS = [
