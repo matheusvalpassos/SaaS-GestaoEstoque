@@ -24,6 +24,8 @@ O sistema permite:
 
 ## 🖥️ Telas do Sistema em Ação
 
+Acesse a aplicação ao vivo em: https://msvrocha.pythonanywhere.com/
+
 #### Homepage
 ![Tela da Homepage](backend/static_dev/img/meusaas%20(6).png)
 *Página inicial de apresentação da plataforma.*
