@@ -1,9 +1,9 @@
 # 📦 Plataforma de Automação de Relatórios Top Clube
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Python Version](https://img.shields.io/badge/Python-3.11+-blue)
+![Python Version](https://img.shields.io/badge/Python-3.10-blue)
 ![Django Version](https://img.shields.io/badge/Django-5.0-darkgreen)
-![Status](https://img.shields.io/badge/Status-Online%20na%20Render-brightgreen)
+![Status](https://img.shields.io/badge/Deploy-PythonAnywhere-brightgreen)
 
 > Uma ferramenta web interna para a Rede Bellas, projetada para automatizar e centralizar a gestão de relatórios de resgate de produtos do programa Top Clube.
 
@@ -11,7 +11,7 @@
 
 ## 📌 Sobre
 
-Este projeto foi desenvolvido como uma solução interna para otimizar os processos operacionais da Rede Bellas. A plataforma automatiza a importação de dados de resgates, a gestão de status, o controle de clientes e produtos, e a geração de relatórios e manifestos de entrega, substituindo processos manuais e planilhas.
+Este projeto foi desenvolvido como uma solução interna para otimizar os processos operacionais da Rede Bellas. A plataforma automatiza a importação de dados de resgates, a gestão de status, o controle de clientes e produtos, e a geração de relatórios, substituindo processos manuais e planilhas.
 
 O sistema permite:
 - ✅ **Importação em Lote:** Processa e importa centenas de resgates de uma vez, copiando e colando os dados do sistema legado.
@@ -24,19 +24,15 @@ O sistema permite:
 
 ## 🖥️ Telas do Sistema em Ação
 
-Acesse a aplicação ao vivo em: https://msvrocha.pythonanywhere.com/
+Acesse a aplicação ao vivo em: **[https://msvrocha.pythonanywhere.com/](https://msvrocha.pythonanywhere.com/)**
 
 #### Homepage
 ![Tela da Homepage](backend/static_dev/img/meusaas%20(6).png)
 *Página inicial de apresentação da plataforma.*
 
-#### Página de Login
+#### Página de Login e Registro
 ![Tela de Login](backend/static_dev/img/meusaas%20(7).png)
-*Formulário de acesso para usuários autenticados.*
-
-#### Página de Registro
-![Tela de Registro](backend/static_dev/img/meusaas%20(8).png)
-*Formulário para criação de novas contas de acesso.*
+*Formulários de acesso e criação de conta para usuários autorizados.*
 
 #### Dashboard Principal
 ![Tela do Dashboard Principal](backend/static_dev/img/meusaas%20(1).png)
@@ -68,7 +64,7 @@ Acesse a aplicação ao vivo em: https://msvrocha.pythonanywhere.com/
 | 📊 **Dashboard Dinâmico** | Painel visual com estatísticas, gráficos interativos e listas de Top 5, com animações e saudação dinâmica. |
 | 📥 **Importação Inteligente**| Processa texto bruto, cria automaticamente Produtos, Clientes e Postos que não existem e importa os resgates. |
 | ⚙️ **Gestão de Status** | Permite alterar o status de cada resgate (Gerado, Resgatado, Cancelado) individualmente. |
-| 📄 **Relatórios em PDF** | Gera relatórios gerais e manifestos de entrega em PDF com layout profissional, usando WeasyPrint. |
+| 📄 **Relatórios em PDF** | Gera relatórios em PDF com layout profissional, usando WeasyPrint. |
 | 🎨 **Interface Responsiva** | Design moderno e consistente em todas as telas, construído com **Tailwind CSS** e **Font Awesome**. |
 | 🔍 **Busca e Filtragem** | Ferramentas de busca e filtros avançados nas páginas de listagem para encontrar dados rapidamente. |
 
@@ -78,9 +74,8 @@ Acesse a aplicação ao vivo em: https://msvrocha.pythonanywhere.com/
 
 Para rodar este projeto localmente, você precisa de:
 
-- [Python 3.11+](https://www.python.org/downloads/)
+- [Python 3.10+](https://www.python.org/downloads/)
 - [Node.js](https://nodejs.org/) (para compilar o Tailwind CSS)
-- Uma conta no [Supabase](https://supabase.com/) para o banco de dados PostgreSQL.
 
 ---
 
@@ -120,8 +115,8 @@ Dentro da pasta `backend`, crie um arquivo chamado `.env` e adicione as seguinte
 SECRET_KEY="sua_chave_secreta_django_aqui"
 DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-DATABASE_URL="sua_connection_string_do_supabase_aqui"
 ```
+> **Nota:** Para o ambiente local, o banco de dados padrão é o `SQLite`, que não requer uma `DATABASE_URL`.
 
 ### Passo 4: Execute o projeto
 
@@ -148,9 +143,7 @@ SaaS-GestaoEstoque/
 │   ├── config/             # Configurações do projeto Django (settings.py)
 │   ├── core/               # App principal com models, views e templates
 │   ├── manage.py           # Gerenciador do Django
-│   ├── build.sh            # Script de build para a Render
-│   ├── requirements.txt    # Dependências do Python
-│   └── uwsgi.ini           # Configuração do servidor uWSGI
+│   └── requirements.txt    # Dependências do Python
 │
 └── frontend/
     ├── src/                # Arquivos fonte do CSS (input.css)
